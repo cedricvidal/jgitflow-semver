@@ -47,14 +47,17 @@ public class JGitFlowSemverTest {
 
     @Test
     public void test() throws Exception {
+
+        // Init repo on master
+
         git.add().addFilepattern(appendToFile("README", "Line 1\n").getName()).call();
         git.commit().setMessage("Line 1").call();
 
         assertEquals(Version.valueOf("0.0.0-1+sha." + sha()), jGitFlowSemver.infer());
 
-        git.branchCreate().setName("develop").call();
+        // Add file on develop
 
-        Ref ref = git.checkout().setName("develop").call();
+        git.checkout().setCreateBranch(true).setName("develop").call();
         assertEquals("develop", repository.getBranch());
 
         assertEquals(Version.valueOf("0.0.0-dev.1+sha." + sha()), jGitFlowSemver.infer());
@@ -63,6 +66,14 @@ public class JGitFlowSemverTest {
         git.commit().setMessage("Line 2").call();
 
         assertEquals(Version.valueOf("0.0.0-dev.2+sha." + sha()), jGitFlowSemver.infer());
+
+        // Add Feature
+        git.checkout().setCreateBranch(true).setName("feature/first").call();
+
+        git.add().addFilepattern(appendToFile("README", "Feature 1\n").getName()).call();
+        git.commit().setMessage("Feature 1").call();
+
+        assertEquals(Version.valueOf("0.0.0-feature.first.3+sha." + sha()), jGitFlowSemver.infer());
     }
 
     private String sha() throws IOException {
