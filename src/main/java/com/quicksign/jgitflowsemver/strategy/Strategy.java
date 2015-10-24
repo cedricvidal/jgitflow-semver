@@ -40,5 +40,5 @@ public interface Strategy {
      * </a>
      * to see all classes implementing this interface.
      */
-    public static final ArrayList<Strategy> STRATEGIES = new ArrayList<Strategy>(Arrays.asList(new BranchReleaseStrategy()));
+    public static final ArrayList<Strategy> STRATEGIES = new ArrayList<Strategy>(Arrays.asList(new BranchReleaseStrategy(), new BranchDevelopStrategy()));
 }

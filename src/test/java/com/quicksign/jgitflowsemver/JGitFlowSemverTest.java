@@ -52,6 +52,17 @@ public class JGitFlowSemverTest {
 
         assertEquals(Version.valueOf("0.0.0-1+sha." + sha()), jGitFlowSemver.infer());
 
+        git.branchCreate().setName("develop").call();
+
+        Ref ref = git.checkout().setName("develop").call();
+        assertEquals("develop", repository.getBranch());
+
+        assertEquals(Version.valueOf("0.0.0-dev.1+sha." + sha()), jGitFlowSemver.infer());
+
+        git.add().addFilepattern(appendToFile("README", "Line 2\n").getName()).call();
+        git.commit().setMessage("Line 2").call();
+
+        assertEquals(Version.valueOf("0.0.0-dev.2+sha." + sha()), jGitFlowSemver.infer());
     }
 
     private String sha() throws IOException {
