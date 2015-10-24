@@ -60,10 +60,11 @@ public class NearestVersionLocator {
         Integer minDistance = Integer.MAX_VALUE;
 
         for(Ref tag : new Git(repository).tagList().call()) {
+            tag = repository.peel(tag);
             ObjectId tagCommit = tag.getPeeledObjectId();
             String tagName = tag.getName();
             tagName = tagName.substring(tagName.lastIndexOf('/') + 1);
-            Version version = Version.valueOf(tagName.substring(0, 1).equals(versionPrefix) ? tagName.substring(1) : tag.getName());
+            Version version = Version.valueOf(tagName.substring(0, 1).equals(versionPrefix) ? tagName.substring(1) : tagName);
             LOGGER.debug("Tag " + tagName + " (" + tag.getObjectId().abbreviate(7) + ") parsed as " + version + " version.");
 
             if (version != null) {

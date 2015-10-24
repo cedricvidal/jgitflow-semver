@@ -41,6 +41,8 @@ public class JGitFlowSemverTest {
         assertNotNull(repository.getRef(Constants.HEAD));
         assertTrue(git.status().call().isClean());
         jGitFlowSemver = new JGitFlowSemver(gitDir);
+
+//        System.out.println("Git dir: " + gitDir);
     }
 
     @Test
@@ -90,6 +92,19 @@ public class JGitFlowSemverTest {
         git.commit().setMessage("Prepare release").call();
 
         assertEquals(Version.valueOf("0.1.0-pre.5+sha." + sha()), jGitFlowSemver.infer());
+
+        // Finish release
+
+        jGitFlow.releaseFinish("0.1.0").call();
+
+        git.checkout().setName("master").call();
+        assertEquals("master", repository.getBranch());
+        assertEquals(Version.valueOf("0.1.0"), jGitFlowSemver.infer());
+
+        // Back to develop
+
+        git.checkout().setName("develop").call();
+        assertEquals(Version.valueOf("0.1.0-dev.1+sha." + sha()), jGitFlowSemver.infer());
     }
 
     private String sha() throws IOException {
