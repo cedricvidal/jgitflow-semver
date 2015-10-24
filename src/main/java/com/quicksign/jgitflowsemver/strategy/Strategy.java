@@ -43,6 +43,7 @@ public interface Strategy {
     public static final ArrayList<Strategy> STRATEGIES = new ArrayList<Strategy>(Arrays.asList(
         new BranchReleaseStrategy(),
         new BranchDevelopStrategy(),
-        new BranchFeatureStrategy()
+        new BranchFeatureStrategy(),
+        new BranchPreReleaseStrategy()
     ));
 }

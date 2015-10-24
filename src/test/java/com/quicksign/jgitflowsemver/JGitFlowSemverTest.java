@@ -1,12 +1,12 @@
 package com.quicksign.jgitflowsemver;
 
+import com.atlassian.jgitflow.core.JGitFlow;
 import com.github.zafarkhaja.semver.Version;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.junit.Before;
 import org.junit.Rule;
@@ -15,9 +15,7 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.regex.Pattern;
 
-import static java.util.regex.Pattern.compile;
 import static org.junit.Assert.*;
 
 /**
@@ -56,8 +54,9 @@ public class JGitFlowSemverTest {
         assertEquals(Version.valueOf("0.0.0-1+sha." + sha()), jGitFlowSemver.infer());
 
         // Add file on develop
+        final JGitFlow jGitFlow = JGitFlow.init(workDir);
 
-        git.checkout().setCreateBranch(true).setName("develop").call();
+        git.checkout().setName("develop").call();
         assertEquals("develop", repository.getBranch());
 
         assertEquals(Version.valueOf("0.0.0-dev.1+sha." + sha()), jGitFlowSemver.infer());
@@ -68,12 +67,29 @@ public class JGitFlowSemverTest {
         assertEquals(Version.valueOf("0.0.0-dev.2+sha." + sha()), jGitFlowSemver.infer());
 
         // Add Feature
-        git.checkout().setCreateBranch(true).setName("feature/first").call();
+        jGitFlow.featureStart("first").call();
 
         git.add().addFilepattern(appendToFile("README", "Feature 1\n").getName()).call();
         git.commit().setMessage("Feature 1").call();
 
         assertEquals(Version.valueOf("0.0.0-feature.first.3+sha." + sha()), jGitFlowSemver.infer());
+
+        // Finish feature
+
+        jGitFlow.featureFinish("first").call();
+
+        assertEquals(Version.valueOf("0.0.0-dev.4+sha." + sha()), jGitFlowSemver.infer());
+
+        // Start release
+
+        jGitFlow.releaseStart("0.1.0").call();
+
+        assertEquals(Version.valueOf("0.1.0-pre.4+sha." + sha()), jGitFlowSemver.infer());
+
+        git.add().addFilepattern(appendToFile("README", "Prepare release\n").getName()).call();
+        git.commit().setMessage("Prepare release").call();
+
+        assertEquals(Version.valueOf("0.1.0-pre.5+sha." + sha()), jGitFlowSemver.infer());
     }
 
     private String sha() throws IOException {
