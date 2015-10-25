@@ -53,7 +53,7 @@ bintray {
         repo = 'jgitflow-semver'
         name = 'jgitflow-semver'
         licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/Rocketmakers/gitflow-semver.git'
+        vcsUrl = 'https://github.com/cedricvidal/jgitflow-semver.git'
 
         version {
             name = project.version
