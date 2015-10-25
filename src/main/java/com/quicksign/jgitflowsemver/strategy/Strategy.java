@@ -45,6 +45,9 @@ public interface Strategy {
         new BranchDevelopStrategy(),
         new BranchFeatureStrategy(),
         new BranchPreReleaseStrategy(),
-        new BranchHotfixStrategy()
+        new BranchHotfixStrategy(),
+
+        // Must be last
+        new DetachedHeadStrategy()
     ));
 }

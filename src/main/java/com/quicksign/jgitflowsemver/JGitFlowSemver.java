@@ -40,12 +40,13 @@ public class JGitFlowSemver {
         for (Strategy strategy : Strategy.STRATEGIES) {
             if(strategy.canInfer(repository)) {
                 versionWithType = strategy.infer(repository, conf);
+
+                if(versionWithType != null) {
+                    return versionWithType.getVersion();
+                }
             }
         }
 
-        if(versionWithType != null) {
-            return versionWithType.getVersion();
-        }
         return null;
 
     }
