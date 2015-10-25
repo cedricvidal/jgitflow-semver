@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 
 /**
  * @author <a href="mailto:cedric.vidal@quicksign.com">Cedric Vidal, Quicksign</a>
@@ -24,8 +25,23 @@ public class JGitFlowSemver {
     private static final Logger LOGGER = LoggerFactory.getLogger(JGitFlowSemver.class);
 
     public static void main(String[] args) throws Exception {
-        Version v = new JGitFlowSemver(new File(args[0], ".git")).infer();
-        System.out.println(v);
+        if(args.length != 1) {
+            printUsage(System.err);
+            System.exit(1);
+        }
+        try {
+            Version v = null;
+            v = new JGitFlowSemver(new File(args[0], ".git")).infer();
+            System.out.println(v);
+        } catch (Exception e) {
+            System.err.println("An error ocured: " + e.getMessage());
+            printUsage(System.err);
+            System.out.println("unknown");
+        }
+    }
+
+    private static void printUsage(PrintStream stream) {
+        stream.println("usage: jgitflow-semver <path>");
     }
 
     public Version infer() throws Exception {
