@@ -41,7 +41,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes("Implementation-Title": "QS JGitFlow SemVer", "Implementation-Version": version)
+        attributes("Implementation-Title": "JGitFlow SemVer", "Implementation-Version": version)
     }
 }
 
