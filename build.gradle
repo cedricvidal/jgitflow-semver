@@ -47,8 +47,16 @@ jar {
 
 task proguard(type: proguard.gradle.ProGuardTask, dependsOn: 'shadowJar') {
     configuration 'applications.pro'
-    injars "${project.buildDir}/libs/qs-jgitflow-semver-${project.version}-all.jar"
-    outjars "${project.buildDir}/libs/qs-jgitflow-semver-${project.version}-min.jar"
+    injars "${project.buildDir}/libs/${project.name}-${version}-all.jar"
+    outjars "${project.buildDir}/libs/${project.name}-${version}-min.jar"
 
     keep "public class $mainClassName"
+}
+
+task script(dependsOn: 'proguard') << {
+    ant.concat(destfile: "${project.buildDir}/${project.name}-${version}.sh", binary: true) {
+        fileset(file: 'src/script/stub.sh')
+        fileset(file: "${project.buildDir}/libs/${project.name}-${version}-min.jar")
+    }
+    ant.chmod(file: "${project.buildDir}/${project.name}-${version}.sh", perm: "a+x")
 }
