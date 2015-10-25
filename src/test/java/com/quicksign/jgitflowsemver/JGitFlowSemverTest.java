@@ -105,6 +105,18 @@ public class JGitFlowSemverTest {
 
         git.checkout().setName("develop").call();
         assertEquals(Version.valueOf("0.1.0-dev.1+sha." + sha()), jGitFlowSemver.infer());
+
+        // Create hotfix
+
+        jGitFlow.hotfixStart("whoops").call();
+        git.add().addFilepattern(appendToFile("README", "Whoops\n").getName()).call();
+        git.commit().setMessage("Whoops").call();
+
+        assertEquals(Version.valueOf("0.1.0-fix.whoops.1+sha." + sha()), jGitFlowSemver.infer());
+
+        jGitFlow.hotfixFinish("whoops").call();
+        assertEquals("develop", repository.getBranch());
+        assertEquals(Version.valueOf("0.1.0-dev.4+sha." + sha()), jGitFlowSemver.infer());
     }
 
     private String sha() throws IOException {

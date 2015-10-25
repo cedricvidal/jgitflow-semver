@@ -64,8 +64,15 @@ public class NearestVersionLocator {
             ObjectId tagCommit = tag.getPeeledObjectId();
             String tagName = tag.getName();
             tagName = tagName.substring(tagName.lastIndexOf('/') + 1);
-            Version version = Version.valueOf(tagName.substring(0, 1).equals(versionPrefix) ? tagName.substring(1) : tagName);
-            LOGGER.debug("Tag " + tagName + " (" + tag.getObjectId().abbreviate(7) + ") parsed as " + version + " version.");
+            Version version = null;
+
+            try {
+                final String versionName = tagName.substring(0, 1).equals(versionPrefix) ? tagName.substring(1) : tagName;
+                version = Version.valueOf(versionName);
+                LOGGER.debug("Tag " + tagName + " (" + tag.getObjectId().abbreviate(7) + ") parsed as " + version + " version.");
+            } catch (Exception e) {
+                LOGGER.debug("Tag " + tagName + " (" + tag.getObjectId().abbreviate(7) + ") could not be parsed as version.");
+            }
 
             if (version != null) {
                 int distance = 0;
