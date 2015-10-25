@@ -1,0 +1,110 @@
+buildscript {
+    repositories { jcenter() }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.2'
+        classpath 'com.github.amkay:gradle-gitflow:0.2.0'
+        classpath 'net.sf.proguard:proguard-gradle:5.2.1'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: "maven-publish"
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'application'
+apply plugin: 'com.github.amkay.gitflow'
+apply plugin: 'com.jfrog.bintray'
+
+mainClassName = "com.quicksign.jgitflowsemver.JGitFlowSemver"
+sourceCompatibility = 1.5
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+publishing {
+    publications {
+        mainPublication(MavenPublication) {
+            from components.java
+
+            groupId 'com.quicksign.jgitflow-semver'
+            artifactId 'jgitflow-semver'
+            version project.version
+
+            artifact sourceJar
+            artifact("${project.buildDir}/libs/${project.name}-${version}-min.jar") {
+                classifier "min"
+                extension "jar"
+            }
+            artifact("${project.buildDir}/${project.name}-${version}.sh") {
+                classifier "script"
+                extension "sh"
+            }
+        }
+    }
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['mainPublication']
+    pkg {
+        repo = 'jgitflow-semver'
+        name = 'jgitflow-semver'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/cedricvidal/jgitflow-semver.git'
+
+        version {
+            name = project.version
+            desc = 'JGitFlow SemVer'
+            //released  = new Date()
+        }
+    }
+}
+
+configurations {
+    compile.exclude group: 'commons-logging'
+    compile.exclude group: 'org.apache.servicemix.bundles'
+    compile.exclude group: 'com.jcraft'
+    compile.exclude module: 'httpclient'
+    compile.exclude module: 'JavaEWAH'
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile 'external.atlassian.jgitflow:jgit-flow-core:1.0-m5.1'
+    compile 'com.github.zafarkhaja:java-semver:0.9.0'
+    compile 'org.eclipse.jgit:org.eclipse.jgit:3.7.1.201504261725-r'
+    compile 'org.slf4j:jcl-over-slf4j:1.7.12'
+    compile 'org.slf4j:slf4j-api:1.7.12'
+    compile 'org.slf4j:slf4j-simple:1.7.12'
+    compile 'com.google.guava:guava:11.0.2'
+}
+
+jar {
+    manifest {
+        attributes("Implementation-Title": "JGitFlow SemVer", "Implementation-Version": version)
+    }
+}
+
+task proguard(type: proguard.gradle.ProGuardTask, dependsOn: 'shadowJar') {
+    configuration 'applications.pro'
+    injars "${project.buildDir}/libs/${project.name}-${version}-all.jar"
+    outjars "${project.buildDir}/libs/${project.name}-${version}-min.jar"
+
+    keep "public class $mainClassName"
+}
+
+task script(dependsOn: 'proguard') << {
+    ant.concat(destfile: "${project.buildDir}/${project.name}-${version}.sh", binary: true) {
+        fileset(file: 'src/script/stub.sh')
+        fileset(file: "${project.buildDir}/libs/${project.name}-${version}-min.jar")
+    }
+    ant.chmod(file: "${project.buildDir}/${project.name}-${version}.sh", perm: "a+x")
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier "sources"
+}
