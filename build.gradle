@@ -108,3 +108,12 @@ task sourceJar(type: Jar) {
     from sourceSets.main.allJava
     classifier "sources"
 }
+
+shadowJar {
+    exclude 'META-INF/**/pom.xml'
+    exclude 'META-INF/**/pom.properties'
+    exclude '**/LICENSE*'
+    exclude '**/NOTICE*'
+    exclude 'plugin.properties'
+    exclude '**/*.html'
+}
