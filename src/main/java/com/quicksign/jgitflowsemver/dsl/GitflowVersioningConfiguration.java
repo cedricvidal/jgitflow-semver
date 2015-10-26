@@ -1,6 +1,12 @@
 package com.quicksign.jgitflowsemver.dsl;
 
-import java.io.File;
+import org.eclipse.jgit.lib.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+
+import static com.quicksign.jgitflowsemver.util.JGitUtil.isDetached;
 
 /**
  * The Gradle plugin extension. This is the entry point of the <em>DSL</em> to configure the plugin.
@@ -9,8 +15,10 @@ import java.io.File;
  * @author <a href="mailto:cedric.vidal@quicksign.com">Cedric Vidal, Quicksign</a>
  */
 public class GitflowVersioningConfiguration {
-    public GitflowVersioningConfiguration(final File projectDir) {
-        setRepositoryRoot(projectDir.getPath());
+
+    private Logger logger = LoggerFactory.getLogger(GitflowVersioningConfiguration.class);
+
+    public GitflowVersioningConfiguration() {
     }
 
     /**
@@ -66,4 +74,36 @@ public class GitflowVersioningConfiguration {
      * Holder that allows to configure the <em>build metadata identifiers</em> according to <em>semantic versioning</em>
      */
     private final BuildMetadataIdentifiers buildMetadataIds = new BuildMetadataIdentifiers();
+
+    private String forceBranch;
+
+    public String getForceBranch() {
+        return forceBranch;
+    }
+
+    public void setForceBranch(String forceBranch) {
+        this.forceBranch = forceBranch;
+    }
+
+    public GitflowVersioningConfiguration forceBranch(String branchName) {
+        setForceBranch(branchName);
+        return this;
+    }
+
+    public String getBranch(Repository repo) throws IOException {
+        String branch = repo.getBranch();
+        if(forceBranch != null && forceBranch.length() > 0) {
+            if(isDetached(repo)) {
+                branch = forceBranch;
+            } else {
+                logger.warn("Ignoring forceBranch as repository is not detached");
+            }
+        }
+        return branch;
+    }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger;
+    }
+
 }

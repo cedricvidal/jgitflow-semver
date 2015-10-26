@@ -16,8 +16,8 @@ import java.io.IOException;
 public class BranchDevelopStrategy extends AbstractStrategy implements Strategy {
 
     @Override
-    public boolean canInfer(final Repository repo) throws IOException {
-        return repo.getBranch().equals(getDevelopBranchName(repo));
+    public boolean canInfer(final Repository repo, GitflowVersioningConfiguration conf) throws IOException {
+        return conf.getBranch(repo).equals(getDevelopBranchName(repo));
     }
 
     private static String getDevelopBranchName(final Repository repo) {

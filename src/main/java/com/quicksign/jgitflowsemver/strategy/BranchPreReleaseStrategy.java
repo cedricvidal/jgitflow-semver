@@ -16,8 +16,8 @@ import java.io.IOException;
 public class BranchPreReleaseStrategy extends AbstractStrategy implements Strategy {
 
     @Override
-    public boolean canInfer(final Repository repo) throws IOException {
-        return repo.getBranch().startsWith(getReleasePrefix(repo));
+    public boolean canInfer(final Repository repo, GitflowVersioningConfiguration conf) throws IOException {
+        return conf.getBranch(repo).startsWith(getReleasePrefix(repo));
     }
 
     private static String getReleasePrefix(final Repository repo) {
