@@ -117,6 +117,12 @@ public class JGitFlowSemverTest {
         jGitFlow.hotfixFinish("whoops").call();
         assertEquals("develop", repository.getBranch());
         assertEquals(Version.valueOf("0.1.0-dev.4+sha." + sha()), jGitFlowSemver.infer());
+
+        // Detached
+
+        git.checkout().setName("HEAD").call(); // This checks out develop in detached mode
+        assertEquals(Version.valueOf("0.1.0-detached.4+sha." + sha()), jGitFlowSemver.infer());
+
     }
 
     private String sha() throws IOException {
