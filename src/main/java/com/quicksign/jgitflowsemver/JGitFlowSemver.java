@@ -4,6 +4,7 @@ import com.github.zafarkhaja.semver.Version;
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
 import com.quicksign.jgitflowsemver.strategy.Strategy;
 import com.quicksign.jgitflowsemver.version.VersionWithType;
+import org.apache.commons.cli.*;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -23,29 +24,58 @@ public class JGitFlowSemver {
     private final File dir;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JGitFlowSemver.class);
+    private final GitflowVersioningConfiguration conf;
 
     public static void main(String[] args) throws Exception {
-        if(args.length != 1) {
-            printUsage(System.err);
+
+        // create Options object
+        Options options = new Options();
+
+        // add t option
+        options.addOption("b", true, "force branch name in case of a detached repo");
+
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = parser.parse( options, args);
+
+        final GitflowVersioningConfiguration conf = new GitflowVersioningConfiguration();
+        try {
+            // parse the command line arguments
+            CommandLine line = parser.parse( options, args );
+            if(line.hasOption('b')) {
+                conf.setForceBranch(line.getOptionValue('b'));
+            }
+            args = line.getArgs();
+        }
+        catch( ParseException exp ) {
+            printUsage(options, System.err);
             System.exit(1);
         }
+
+        if(args.length != 1) {
+            printUsage(options, System.err);
+            System.exit(1);
+        }
+
         try {
             Version v = null;
-            v = new JGitFlowSemver(new File(args[0], ".git")).infer();
+            final File dir = new File(args[0], ".git");
+            conf.setRepositoryRoot(dir.getPath());
+
+            v = new JGitFlowSemver(dir, conf).infer();
             System.out.println(v);
         } catch (Exception e) {
             System.err.println("An error ocured: " + e.getMessage());
-            printUsage(System.err);
+            printUsage(options, System.err);
             System.out.println("unknown");
         }
     }
 
-    private static void printUsage(PrintStream stream) {
-        stream.println("usage: jgitflow-semver <path>");
+    private static void printUsage(Options options, PrintStream stream) {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("jgitflow-semver [options]... <path>", options, false);
     }
 
     public Version infer() throws Exception {
-        final GitflowVersioningConfiguration conf = new GitflowVersioningConfiguration(dir);
 
         Ref headRef = repository.getRef( Constants.HEAD );
         if( headRef == null || headRef.getObjectId() == null ) {
@@ -54,7 +84,7 @@ public class JGitFlowSemver {
 
         VersionWithType versionWithType = null;
         for (Strategy strategy : Strategy.STRATEGIES) {
-            if(strategy.canInfer(repository)) {
+            if(strategy.canInfer(repository, conf)) {
                 versionWithType = strategy.infer(repository, conf);
 
                 if(versionWithType != null) {
@@ -67,8 +97,9 @@ public class JGitFlowSemver {
 
     }
 
-    public JGitFlowSemver(File dir) throws IOException {
+    public JGitFlowSemver(File dir, GitflowVersioningConfiguration conf) throws IOException {
         this.dir = dir;
+        this.conf = conf;
 
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         repository = builder.setGitDir(dir)

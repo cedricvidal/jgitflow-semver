@@ -4,6 +4,7 @@ import com.atlassian.jgitflow.core.JGitFlow;
 import com.github.zafarkhaja.semver.Version;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
@@ -12,11 +13,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author <a href="mailto:cedric.vidal@quicksign.com">Cedric Vidal, Quicksign</a>
@@ -30,6 +34,8 @@ public class JGitFlowSemverTest {
     private File gitDir;
     private Repository repository;
     private JGitFlowSemver jGitFlowSemver;
+    private GitflowVersioningConfiguration conf;
+    private Logger confLoggerMock;
 
 
     @Before
@@ -40,13 +46,18 @@ public class JGitFlowSemverTest {
         repository = git.getRepository();
         assertNotNull(repository.getRef(Constants.HEAD));
         assertTrue(git.status().call().isClean());
-        jGitFlowSemver = new JGitFlowSemver(gitDir);
+
+        conf = new GitflowVersioningConfiguration();
+        confLoggerMock = Mockito.mock(Logger.class);
+        conf.setLogger(confLoggerMock);
+
+        jGitFlowSemver = new JGitFlowSemver(gitDir, conf);
 
 //        System.out.println("Git dir: " + gitDir);
     }
 
     @Test
-    public void test() throws Exception {
+    public void normal() throws Exception {
 
         // Init repo on master
 
@@ -117,6 +128,21 @@ public class JGitFlowSemverTest {
         jGitFlow.hotfixFinish("whoops").call();
         assertEquals("develop", repository.getBranch());
         assertEquals(Version.valueOf("0.1.0-dev.4+sha." + sha()), jGitFlowSemver.infer());
+
+        // Detached mode (often the case in CI servers)
+
+        git.checkout().setName("HEAD").call(); // This checks out develop in detached mode
+        assertEquals(Version.valueOf("0.1.0-detached.4+sha." + sha()), jGitFlowSemver.infer());
+
+        // Detached forceBranch (used to force branch name on CI servers which often checkout in detached mode)
+        conf.setForceBranch("develop");
+        assertEquals(Version.valueOf("0.1.0-dev.4+sha." + sha()), jGitFlowSemver.infer());
+
+        // ForceBranch works only in detached mode so warn user
+        git.checkout().setName("master").call();
+        assertEquals(Version.valueOf("0.1.0-2+sha." + sha()), jGitFlowSemver.infer());
+        verify(confLoggerMock).warn("Ignoring forceBranch as repository is not detached");
+
     }
 
     private String sha() throws IOException {

@@ -16,7 +16,7 @@ import java.io.IOException;
 public class DetachedHeadStrategy extends AbstractStrategy implements Strategy {
 
     @Override
-    public boolean canInfer(final Repository repo) throws IOException {
+    public boolean canInfer(final Repository repo, GitflowVersioningConfiguration conf) throws IOException {
         return true;
     }
 

@@ -16,8 +16,8 @@ import java.io.IOException;
 public class BranchHotfixStrategy extends AbstractStrategy implements Strategy {
 
     @Override
-    public boolean canInfer(final Repository repo) throws IOException {
-        return repo.getBranch().startsWith(getHotfixPrefix(repo));
+    public boolean canInfer(final Repository repo, GitflowVersioningConfiguration conf) throws IOException {
+        return conf.getBranch(repo).startsWith(getHotfixPrefix(repo));
     }
 
     private static String getHotfixPrefix(final Repository repo) {

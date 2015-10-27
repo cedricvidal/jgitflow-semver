@@ -6,8 +6,6 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The strategy to use when Gitflow's <strong>production release</strong> branch is the current branch.
@@ -18,8 +16,8 @@ import java.util.regex.Pattern;
 public class BranchFeatureStrategy extends AbstractStrategy implements Strategy {
 
     @Override
-    public boolean canInfer(final Repository repo) throws IOException {
-        return repo.getBranch().startsWith(getFeaturePrefix(repo));
+    public boolean canInfer(final Repository repo, GitflowVersioningConfiguration conf) throws IOException {
+        return conf.getBranch(repo).startsWith(getFeaturePrefix(repo));
     }
 
     private static String getFeaturePrefix(final Repository repo) {

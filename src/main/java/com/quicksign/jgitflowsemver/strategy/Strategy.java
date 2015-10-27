@@ -28,9 +28,10 @@ public interface Strategy {
      * Determines if the strategy can infer the version. This is used to match the current branch, for example.
      *
      * @param repo
+     * @param conf
      * @return
      */
-    public abstract boolean canInfer(final Repository repo) throws IOException;
+    public abstract boolean canInfer(final Repository repo, GitflowVersioningConfiguration conf) throws IOException;
 
     /**
      * All available strategies.
