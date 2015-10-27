@@ -5,6 +5,7 @@ Provides [Semantic Versioning](http://semver.org/) using Gitflow. Highly based o
 
 ![image](https://travis-ci.org/cedricvidal/jgitflow-semver.svg?branch=develop)
 [![Code Coverage](https://img.shields.io/codecov/c/github/cedricvidal/jgitflow-semver/develop.svg)](https://codecov.io/github/cedricvidal/jgitflow-semver?branch=develop)
+![image](https://img.shields.io/badge/license-Apache%202-blue.svg)
 
 Versioning
 ---
