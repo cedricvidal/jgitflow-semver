@@ -4,6 +4,7 @@ QuickSign JGitFlow SemVer
 Provides [Semantic Versioning](http://semver.org/) using Gitflow. Highly based on [amkay's gradle-gitflow](https://github.com/amkay/gradle-gitflow) work but rewritten in pure Java without any Gradle dependencies and focused on being used as a JVM library and as a standalone command line program.
 
 ![image](https://travis-ci.org/cedricvidal/jgitflow-semver.svg?branch=develop)
+[![Code Coverage](https://img.shields.io/codecov/c/github/cedricvidal/jgitflow-semver/develop.svg)](https://codecov.io/github/cedricvidal/jgitflow-semver?branch=develop)
 
 Versioning
 ---
