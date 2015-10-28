@@ -1,11 +1,24 @@
 package com.quicksign.jgitflowsemver.strategy;
 
+import com.github.zafarkhaja.semver.Version;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
+import com.quicksign.jgitflowsemver.util.JGitUtil;
 import com.quicksign.jgitflowsemver.version.*;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
+import java.util.List;
+
+import static com.google.common.collect.Iterables.size;
 
 /**
  * The strategy to use when Gitflow's <strong>develop</strong> branch is the current branch.
@@ -30,11 +43,15 @@ public class BranchDevelopStrategy extends AbstractStrategy implements Strategy 
 
     @Override
     protected VersionWithType doInfer(Repository repo, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
-        NearestVersion nearestVersion = new NearestVersionLocator().locate(repo);
 
-        return new VersionWithTypeBuilder(nearestVersion)
+        NearestVersion nearestVersion = new NearestVersionLocator().locate(repo);
+        Version nextVersioNormal = nearestVersion.getAny().incrementMinorVersion();
+
+        final NearestVersion nextVersion = new NearestVersion(nextVersioNormal, 0);
+
+        return new VersionWithTypeBuilder(nextVersion)
             .branch(conf.getPreReleaseIds().getDevelop())
-            .distanceFromRelease()
+            .distanceFromRelease(nearestVersion)
             .sha(repo, conf)
             .dirty(repo, conf)
             .type(VersionType.DEVELOP)
