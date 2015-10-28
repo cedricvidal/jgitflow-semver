@@ -1,11 +1,15 @@
 package com.quicksign.jgitflowsemver.strategy;
 
+import com.github.zafarkhaja.semver.Version;
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
+import com.quicksign.jgitflowsemver.patterns.BranchVersionExtractor;
 import com.quicksign.jgitflowsemver.version.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 
 import java.io.IOException;
+
+import static com.quicksign.jgitflowsemver.strategy.BranchHotfixStrategy.getHotfixPrefix;
 
 /**
  * The strategy to use when Gitflow's <strong>production release</strong> branch is the current branch.
@@ -17,7 +21,17 @@ public class BranchPreReleaseStrategy extends AbstractStrategy implements Strate
 
     @Override
     public boolean canInfer(final Repository repo, GitflowVersioningConfiguration conf) throws IOException {
-        return conf.getBranch(repo).startsWith(getReleasePrefix(repo));
+        final String branchName = conf.getBranch(repo);
+        final Version version = extractReleaseOrHotfixVersion(repo, branchName);
+        return version != null;
+    }
+
+    private Version extractReleaseOrHotfixVersion(Repository repo, String branchName) {
+        Version version = new BranchVersionExtractor(getReleasePrefix(repo)).extract(branchName);
+        if(version == null) {
+            version = new BranchVersionExtractor(getHotfixPrefix(repo)).extract(branchName);
+        }
+        return version;
     }
 
     private static String getReleasePrefix(final Repository repo) {
@@ -32,15 +46,15 @@ public class BranchPreReleaseStrategy extends AbstractStrategy implements Strate
     protected VersionWithType doInfer(Repository repo, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
         NearestVersion nearestVersion = new NearestVersionLocator().locate(repo);
 
-        String releaseVersion = repo.getBranch().substring(getReleasePrefix(repo).length());
+        final Version releaseVersion = extractReleaseOrHotfixVersion(repo, repo.getBranch());
 
-        return new VersionWithTypeBuilder(releaseVersion)
+        return new VersionWithTypeBuilder(releaseVersion.toString())
             .branch(conf.getPreReleaseIds().getPreRelease())
             .distanceFromRelease(nearestVersion)
             .sha(repo, conf)
             .dirty(repo, conf)
             .type(VersionType.PRE_RELEASE)
-            .build();
+            .build(conf);
     }
 
 }

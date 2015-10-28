@@ -20,7 +20,7 @@ public class BranchHotfixStrategy extends AbstractStrategy implements Strategy {
         return conf.getBranch(repo).startsWith(getHotfixPrefix(repo));
     }
 
-    private static String getHotfixPrefix(final Repository repo) {
+    public static String getHotfixPrefix(final Repository repo) {
         final String prefix = AbstractStrategy.getPrefix(repo, CONFIG_PREFIX_HOTFIX);
         return prefix != null ? prefix : DEFAULT_PREFIX_HOTFIX;
     }
@@ -40,7 +40,7 @@ public class BranchHotfixStrategy extends AbstractStrategy implements Strategy {
             .sha(repo, conf)
             .dirty(repo, conf)
             .type(VersionType.HOTFIX)
-            .build();
+            .build(conf);
     }
 
 }

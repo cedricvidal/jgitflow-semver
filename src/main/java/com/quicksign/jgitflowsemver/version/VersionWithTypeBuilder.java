@@ -109,25 +109,40 @@ public class VersionWithTypeBuilder {
      * Builds the version
      *
      * @return
+     * @param conf
      */
-    public VersionWithType build() {
-        StringBuilder preRelease = new StringBuilder();
-        StringBuilder buildMetadata = new StringBuilder();
+    public VersionWithType build(GitflowVersioningConfiguration conf) {
+        Version version;
+        if(!conf.isUseMavenSnapshot()) {
+            StringBuilder preRelease = new StringBuilder();
+            StringBuilder buildMetadata = new StringBuilder();
 
-        if(distanceFromRelease > 0) {
-            append(preRelease, branch);
-            append(preRelease, Integer.toString(distanceFromRelease));
-            append(buildMetadata, sha);
+            if(distanceFromRelease > 0) {
+                append(preRelease, branch);
+                append(preRelease, Integer.toString(distanceFromRelease));
+                append(buildMetadata, sha);
+            }
+
+            append(buildMetadata, dirty);
+
+            version = new Version.Builder(normal)
+                .setPreReleaseVersion(preRelease.toString())
+                .setBuildMetadata(buildMetadata.toString())
+                .build();
+        } else {
+            StringBuilder buildMetadata = new StringBuilder();
+            if(distanceFromRelease > 0) {
+                if(branch != null && branch.length() > 0 && !conf.getPreReleaseIds().getDevelop().equals(branch)) {
+                    buildMetadata.append(branch).append('.');
+                }
+                buildMetadata.append("SNAPSHOT");
+            }
+            version = new Version.Builder(normal)
+                .setPreReleaseVersion(buildMetadata.toString())
+                .build();
         }
 
-        append(buildMetadata, dirty);
-
-        Object version = new Version.Builder(normal)
-            .setPreReleaseVersion(preRelease.toString())
-            .setBuildMetadata(buildMetadata.toString())
-            .build();
-
-        return new VersionWithType((Version) version, type);
+        return new VersionWithType(version, type);
     }
 
     private void append(final StringBuilder sb, final String s) {

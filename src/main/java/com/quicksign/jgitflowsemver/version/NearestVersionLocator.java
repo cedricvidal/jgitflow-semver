@@ -1,8 +1,11 @@
 package com.quicksign.jgitflowsemver.version;
 
 import com.github.zafarkhaja.semver.Version;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.quicksign.jgitflowsemver.util.JGitUtil;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
@@ -12,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 
 import static com.google.common.collect.Iterables.size;
 
@@ -49,6 +53,53 @@ public class NearestVersionLocator {
      * @return the version corresponding to the nearest tag
      */
     public NearestVersion locate(final Repository repository) throws GitAPIException, IOException {
+        // Look for in progress release branch
+        List<Ref> branches = new Git(repository).branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+        final Ref releaseInProgress = Iterables.find(branches, new Predicate<Ref>() {
+            @Override
+            public boolean apply(Ref input) {
+                return input.getName().startsWith("refs/heads/release/");
+            }
+        }, null);
+
+
+        // If a release is in progress
+        NearestVersion nearestVersion = null;
+        if(releaseInProgress != null) {
+            Version releaseInProgressVersion = Version.valueOf(releaseInProgress.getName().substring("refs/heads/release/".length()));
+
+            final ObjectId releaseId = releaseInProgress.getObjectId();
+
+            int distance = distanceFromReleaseMergeBase(repository, releaseId);
+
+            // If we're at least 1 commit away from release branch merge base
+            // then consider the release branch merge base as the nearest version
+            // otherwise fallback to locate nearest release tag
+            if(distance > 0) {
+                nearestVersion = new NearestVersion(releaseInProgressVersion, distance);
+            }
+        }
+
+        // If nearest version is not a release branch merge base then locate nearest release tag
+        if(nearestVersion == null) {
+            nearestVersion = localTag(repository);
+            final ObjectId releaseId = nearestVersion.getObjectId();
+            if(releaseId != null) {
+                final int distance = distanceFromReleaseMergeBase(repository, releaseId);
+                nearestVersion = new NearestVersion(nearestVersion.getAny(), distance);
+            }
+        }
+
+        return nearestVersion;
+    }
+
+    private int distanceFromReleaseMergeBase(Repository repo, ObjectId releaseId) throws IOException, GitAPIException {
+        final ObjectId head = repo.resolve(Constants.HEAD);
+        final ObjectId mergeBase = JGitUtil.mergeBase(repo, releaseId, head);
+        return size(new Git(repo).log().addRange(mergeBase, head).call());
+    }
+
+    private NearestVersion localTag(Repository repository) throws IOException, GitAPIException {
         final String string = repository.getConfig().getString(CONFIG_SECTION_GITFLOW, CONFIG_SUBSECTION_PREFIX, CONFIG_VERSION_TAG);
         final String versionPrefix = (string != null) ? string : DEFAULT_PREFIX_VERSION;
 
@@ -58,6 +109,7 @@ public class NearestVersionLocator {
 
         Version minVersion = null;
         Integer minDistance = Integer.MAX_VALUE;
+        ObjectId minObjectId = null;
 
         for(Ref tag : new Git(repository).tagList().call()) {
             tag = repository.peel(tag);
@@ -98,6 +150,7 @@ public class NearestVersionLocator {
 
                 if(distance < minDistance && candidateVersion != null) {
                     minVersion = candidateVersion;
+                    minObjectId = tagCommit;
                     minDistance = distance;
                 }
 
@@ -107,7 +160,7 @@ public class NearestVersionLocator {
         Version anyVersion = minVersion != null ? minVersion : Version.valueOf("0.0.0");
         int distanceFromAny = minVersion != null ? minDistance : size(new Git(repository).log().call());
 
-        return new NearestVersion(anyVersion, distanceFromAny);
+        return new NearestVersion(anyVersion, distanceFromAny).objectId(minObjectId);
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NearestVersionLocator.class);

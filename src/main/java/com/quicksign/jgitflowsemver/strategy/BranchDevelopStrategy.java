@@ -1,5 +1,6 @@
 package com.quicksign.jgitflowsemver.strategy;
 
+import com.github.zafarkhaja.semver.Version;
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
 import com.quicksign.jgitflowsemver.version.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -30,15 +31,19 @@ public class BranchDevelopStrategy extends AbstractStrategy implements Strategy 
 
     @Override
     protected VersionWithType doInfer(Repository repo, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
-        NearestVersion nearestVersion = new NearestVersionLocator().locate(repo);
 
-        return new VersionWithTypeBuilder(nearestVersion)
+        NearestVersion nearestVersion = new NearestVersionLocator().locate(repo);
+        Version nextVersioNormal = nearestVersion.getAny().incrementMinorVersion();
+
+        final NearestVersion nextVersion = new NearestVersion(nextVersioNormal, 0);
+
+        return new VersionWithTypeBuilder(nextVersion)
             .branch(conf.getPreReleaseIds().getDevelop())
-            .distanceFromRelease()
+            .distanceFromRelease(nearestVersion)
             .sha(repo, conf)
             .dirty(repo, conf)
             .type(VersionType.DEVELOP)
-            .build();
+            .build(conf);
     }
 
 }

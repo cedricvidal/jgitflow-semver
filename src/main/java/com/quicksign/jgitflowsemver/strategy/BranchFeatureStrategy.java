@@ -34,13 +34,18 @@ public class BranchFeatureStrategy extends AbstractStrategy implements Strategy 
 
         String feature = repo.getBranch().substring(getFeaturePrefix(repo).length());
 
-        return new VersionWithTypeBuilder(nearestVersion)
+        final NearestVersion nextVersion = new NearestVersion(
+            nearestVersion.getAny().incrementMinorVersion(),
+            nearestVersion.getDistanceFromAny()
+        );
+
+        return new VersionWithTypeBuilder(nextVersion)
             .branch(conf.getPreReleaseIds().getFeature() + "." + feature)
-            .distanceFromRelease()
+            .distanceFromRelease(nearestVersion)
             .sha(repo, conf)
             .dirty(repo, conf)
             .type(VersionType.FEATURE)
-            .build();
+            .build(conf);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.quicksign.jgitflowsemver.version;
 
 import com.github.zafarkhaja.semver.Version;
+import org.eclipse.jgit.lib.ObjectId;
 
 /**
  * @author Max Käufer
@@ -11,6 +12,9 @@ public class NearestVersion {
      * The nearest version that is tagged.
      */
     private final Version any;
+
+    private ObjectId objectId;
+
     /**
      * The number of commits since {@code any} reachable from <em>HEAD</em>.
      */
@@ -27,5 +31,14 @@ public class NearestVersion {
 
     public final int getDistanceFromAny() {
         return distanceFromAny;
+    }
+
+    public NearestVersion objectId(ObjectId objectId) {
+        this.objectId = objectId;
+        return this;
+    }
+
+    public ObjectId getObjectId() {
+        return objectId;
     }
 }

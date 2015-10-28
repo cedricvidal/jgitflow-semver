@@ -8,6 +8,7 @@ import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.junit.Before;
 import org.junit.Rule;
@@ -72,12 +73,13 @@ public class JGitFlowSemverTest {
         git.checkout().setName("develop").call();
         assertEquals("develop", repository.getBranch());
 
-        assertEquals(Version.valueOf("0.0.0-dev.1+sha." + sha()), jGitFlowSemver.infer());
+        assertEquals(Version.valueOf("0.1.0-dev.1+sha." + sha()), jGitFlowSemver.infer());
 
         git.add().addFilepattern(appendToFile("README", "Line 2\n").getName()).call();
         git.commit().setMessage("Line 2").call();
 
-        assertEquals(Version.valueOf("0.0.0-dev.2+sha." + sha()), jGitFlowSemver.infer());
+        final ObjectId c010dev2 = head();
+        assertEquals(Version.valueOf("0.1.0-dev.2+sha." + sha()), jGitFlowSemver.infer());
 
         // Add Feature
         jGitFlow.featureStart("first").call();
@@ -85,13 +87,13 @@ public class JGitFlowSemverTest {
         git.add().addFilepattern(appendToFile("README", "Feature 1\n").getName()).call();
         git.commit().setMessage("Feature 1").call();
 
-        assertEquals(Version.valueOf("0.0.0-feature.first.3+sha." + sha()), jGitFlowSemver.infer());
+        assertEquals(Version.valueOf("0.1.0-feature.first.3+sha." + sha()), jGitFlowSemver.infer());
 
         // Finish feature
 
         jGitFlow.featureFinish("first").call();
 
-        assertEquals(Version.valueOf("0.0.0-dev.4+sha." + sha()), jGitFlowSemver.infer());
+        assertEquals(Version.valueOf("0.1.0-dev.4+sha." + sha()), jGitFlowSemver.infer());
 
         // Start release
 
@@ -104,6 +106,23 @@ public class JGitFlowSemverTest {
 
         assertEquals(Version.valueOf("0.1.0-pre.5+sha." + sha()), jGitFlowSemver.infer());
 
+        // Check version on develop branch (no commit since release branch merge base)
+        git.checkout().setName("develop").call();
+        assertEquals(Version.valueOf("0.1.0-dev.4+sha." + sha()), jGitFlowSemver.infer());
+
+        // Commit to develop while releasing
+        git.add().addFilepattern(appendToFile("OTHER", "Continuing dev while releasing\n").getName()).call();
+        git.commit().setMessage("Continuing dev while releasing").call();
+        assertEquals(Version.valueOf("0.2.0-dev.1+sha." + sha()), jGitFlowSemver.infer());
+
+        // Commit to develop while releasing
+        git.add().addFilepattern(appendToFile("OTHER", "Some more\n").getName()).call();
+        git.commit().setMessage("Some more").call();
+        assertEquals(Version.valueOf("0.2.0-dev.2+sha." + sha()), jGitFlowSemver.infer());
+
+        // Check stability of inferred versions for past commits
+        assertPastCommit(c010dev2, "develop", Version.valueOf("0.1.0-dev.2+sha." + c010dev2.abbreviate(7).name()));
+
         // Finish release
 
         jGitFlow.releaseFinish("0.1.0").call();
@@ -112,41 +131,78 @@ public class JGitFlowSemverTest {
         assertEquals("master", repository.getBranch());
         assertEquals(Version.valueOf("0.1.0"), jGitFlowSemver.infer());
 
+        // Check stability of inferred versions for past commits
+        assertPastCommit(c010dev2, "develop", Version.valueOf("0.1.0-dev.2+sha." + c010dev2.abbreviate(7).name()));
+
         // Back to develop
 
         git.checkout().setName("develop").call();
-        assertEquals(Version.valueOf("0.1.0-dev.1+sha." + sha()), jGitFlowSemver.infer());
+        assertEquals(Version.valueOf("0.2.0-dev.3+sha." + sha()), jGitFlowSemver.infer());
 
-        // Create hotfix
+        // Create standard NVIE version hotfix
 
-        jGitFlow.hotfixStart("whoops").call();
-        git.add().addFilepattern(appendToFile("README", "Whoops\n").getName()).call();
-        git.commit().setMessage("Whoops").call();
+        jGitFlow.hotfixStart("0.1.1").call();
+        git.add().addFilepattern(appendToFile("README", "Fix 0.1.1\n").getName()).call();
+        git.commit().setMessage("Fix 0.1.1").call();
 
-        assertEquals(Version.valueOf("0.1.0-fix.whoops.1+sha." + sha()), jGitFlowSemver.infer());
+        assertEquals(Version.valueOf("0.1.1-pre.1+sha." + sha()), jGitFlowSemver.infer());
 
-        jGitFlow.hotfixFinish("whoops").call();
-        assertEquals("develop", repository.getBranch());
-        assertEquals(Version.valueOf("0.1.0-dev.4+sha." + sha()), jGitFlowSemver.infer());
+        jGitFlow.hotfixFinish("0.1.1").call();
+
+        git.checkout().setName("master").call();
+        assertEquals(Version.valueOf("0.1.1"), jGitFlowSemver.infer());
+
+        git.checkout().setName("develop").call();
+        assertEquals(Version.valueOf("0.2.0-dev.4+sha." + sha()), jGitFlowSemver.infer());
 
         // Detached mode (often the case in CI servers)
 
+        git.checkout().setName("develop").call();
         git.checkout().setName("HEAD").call(); // This checks out develop in detached mode
-        assertEquals(Version.valueOf("0.1.0-detached.4+sha." + sha()), jGitFlowSemver.infer());
+        assertEquals(Version.valueOf("0.1.1-detached.4+sha." + sha()), jGitFlowSemver.infer());
 
         // Detached forceBranch (used to force branch name on CI servers which often checkout in detached mode)
         conf.setForceBranch("develop");
-        assertEquals(Version.valueOf("0.1.0-dev.4+sha." + sha()), jGitFlowSemver.infer());
+        assertEquals(Version.valueOf("0.2.0-dev.4+sha." + sha()), jGitFlowSemver.infer());
 
         // ForceBranch works only in detached mode so warn user
         git.checkout().setName("master").call();
-        assertEquals(Version.valueOf("0.1.0-2+sha." + sha()), jGitFlowSemver.infer());
+        assertEquals(Version.valueOf("0.1.1"), jGitFlowSemver.infer());
         verify(confLoggerMock).warn("Ignoring forceBranch as repository is not detached");
+
+        // Create non version hotfix
+
+        jGitFlow.hotfixStart("oups").call();
+        git.add().addFilepattern(appendToFile("README", "Fix oups\n").getName()).call();
+        git.commit().setMessage("Fix oups").call();
+
+        assertEquals(Version.valueOf("0.1.1-fix.oups.1+sha." + sha()), jGitFlowSemver.infer());
+
+        jGitFlow.hotfixFinish("oups").call();
+
+        git.checkout().setName("master").call();
+        assertEquals(Version.valueOf("0.1.1-2+sha." + sha()), jGitFlowSemver.infer());
+
+        git.checkout().setName("develop").call();
+        assertEquals(Version.valueOf("0.2.0-dev.7+sha." + sha()), jGitFlowSemver.infer());
 
     }
 
+    private void assertPastCommit(ObjectId pastCommit, String pastBranch, Version expectedVersion) throws Exception {
+        final String savedBranch = repository.getBranch();
+        git.checkout().setName(pastCommit.getName()).call();
+        conf.setForceBranch(pastBranch);
+        assertEquals(expectedVersion, jGitFlowSemver.infer());
+        conf.setForceBranch(null);
+        git.checkout().setName(savedBranch).call();
+    }
+
     private String sha() throws IOException {
-        return repository.resolve(Constants.HEAD).abbreviate(7).name();
+        return head().abbreviate(7).name();
+    }
+
+    private ObjectId head() throws IOException {
+        return repository.resolve(Constants.HEAD);
     }
 
     private File appendToFile(String path, String content) throws IOException {

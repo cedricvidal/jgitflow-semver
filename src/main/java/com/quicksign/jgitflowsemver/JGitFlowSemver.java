@@ -31,8 +31,9 @@ public class JGitFlowSemver {
         // create Options object
         Options options = new Options();
 
-        // add t option
-        options.addOption("b", true, "force branch name in case of a detached repo");
+        options.addOption("b", "branch", true, "force branch name in case of a detached repo");
+        options.addOption("s", "snapshot", false, "Use Maven SNAPSHOT instead of semver build metadata");
+        options.addOption("m", "maven", false, "Maven compatible semver versions");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse( options, args);
@@ -43,6 +44,12 @@ public class JGitFlowSemver {
             CommandLine line = parser.parse( options, args );
             if(line.hasOption('b')) {
                 conf.setForceBranch(line.getOptionValue('b'));
+            }
+            if(line.hasOption('s')) {
+                conf.useMavenSnapshot();
+            }
+            if(line.hasOption('m')) {
+                conf.mavenCompatibility();
             }
             args = line.getArgs();
         }
@@ -58,11 +65,21 @@ public class JGitFlowSemver {
 
         try {
             Version v = null;
-            final File dir = new File(args[0], ".git");
+            final File root = new File(args[0]);
+            final File dir = new File(root, ".git");
             conf.setRepositoryRoot(dir.getPath());
 
+            if(new File(root, "pom.xml").exists()) {
+                LOGGER.debug("Detected Maven pom.xml so activating Maven compatibility");
+                conf.mavenCompatibility();
+            }
+
             v = new JGitFlowSemver(dir, conf).infer();
-            System.out.println(v);
+            String adjusted = v.toString();
+            if(conf.isMavenCompatibility()) {
+                adjusted = adjusted.replaceAll("\\+", ".");
+            }
+            System.out.println(adjusted);
         } catch (Exception e) {
             System.err.println("An error ocured: " + e.getMessage());
             printUsage(options, System.err);
