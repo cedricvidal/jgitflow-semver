@@ -12,3 +12,5 @@ after_success:
 deploy:
   provider: script
   script: ./gradlew script bintrayUpload
+  on:
+    tags: true
