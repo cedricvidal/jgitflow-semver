@@ -1,24 +1,12 @@
 package com.quicksign.jgitflowsemver.strategy;
 
 import com.github.zafarkhaja.semver.Version;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
-import com.quicksign.jgitflowsemver.util.JGitUtil;
 import com.quicksign.jgitflowsemver.version.*;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
-import java.util.List;
-
-import static com.google.common.collect.Iterables.size;
 
 /**
  * The strategy to use when Gitflow's <strong>develop</strong> branch is the current branch.
@@ -55,7 +43,7 @@ public class BranchDevelopStrategy extends AbstractStrategy implements Strategy 
             .sha(repo, conf)
             .dirty(repo, conf)
             .type(VersionType.DEVELOP)
-            .build();
+            .build(conf);
     }
 
 }

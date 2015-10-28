@@ -40,7 +40,7 @@ public class BranchHotfixStrategy extends AbstractStrategy implements Strategy {
             .sha(repo, conf)
             .dirty(repo, conf)
             .type(VersionType.HOTFIX)
-            .build();
+            .build(conf);
     }
 
 }

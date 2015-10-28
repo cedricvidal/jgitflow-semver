@@ -17,6 +17,8 @@ import static com.quicksign.jgitflowsemver.util.JGitUtil.isDetached;
 public class GitflowVersioningConfiguration {
 
     private Logger logger = LoggerFactory.getLogger(GitflowVersioningConfiguration.class);
+    private boolean useMavenSnapshot = false;
+    private boolean mavenCompatibility = false;
 
     public GitflowVersioningConfiguration() {
     }
@@ -106,4 +108,21 @@ public class GitflowVersioningConfiguration {
         this.logger = logger;
     }
 
+    public GitflowVersioningConfiguration useMavenSnapshot() {
+        this.useMavenSnapshot = true;
+        return this;
+    }
+
+    public boolean isUseMavenSnapshot() {
+        return useMavenSnapshot;
+    }
+
+    public GitflowVersioningConfiguration mavenCompatibility() {
+        this.mavenCompatibility = true;
+        return this;
+    }
+
+    public boolean isMavenCompatibility() {
+        return mavenCompatibility;
+    }
 }

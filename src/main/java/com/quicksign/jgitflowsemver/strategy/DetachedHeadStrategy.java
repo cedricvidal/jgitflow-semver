@@ -30,7 +30,7 @@ public class DetachedHeadStrategy extends AbstractStrategy implements Strategy {
             .sha(repo, conf)
             .dirty(repo, conf)
             .type(VersionType.DETACHED_HEAD)
-            .build();
+            .build(conf);
     }
 
 }

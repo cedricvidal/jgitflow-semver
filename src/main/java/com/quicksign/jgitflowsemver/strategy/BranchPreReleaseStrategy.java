@@ -54,7 +54,7 @@ public class BranchPreReleaseStrategy extends AbstractStrategy implements Strate
             .sha(repo, conf)
             .dirty(repo, conf)
             .type(VersionType.PRE_RELEASE)
-            .build();
+            .build(conf);
     }
 
 }

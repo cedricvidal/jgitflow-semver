@@ -45,7 +45,7 @@ public class BranchFeatureStrategy extends AbstractStrategy implements Strategy 
             .sha(repo, conf)
             .dirty(repo, conf)
             .type(VersionType.FEATURE)
-            .build();
+            .build(conf);
     }
 
 }
