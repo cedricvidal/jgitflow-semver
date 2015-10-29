@@ -2,6 +2,7 @@ package com.quicksign.jgitflowsemver.strategy;
 
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
 import com.quicksign.jgitflowsemver.version.*;
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 
@@ -29,14 +30,14 @@ public class BranchReleaseStrategy extends AbstractStrategy implements Strategy 
     private static final String DEFAULT_BRANCH_RELEASE = "master";
 
     @Override
-    protected VersionWithType doInfer(Repository repo, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
-        NearestVersion nearestVersion = new NearestVersionLocator().locate(repo);
+    protected VersionWithType doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
+        NearestVersion nearestVersion = new NearestVersionLocator().locate(git);
 
         return new VersionWithTypeBuilder(nearestVersion)
             .branch(conf.preReleaseIds().getRelease())
             .distanceFromRelease()
-            .sha(repo, conf)
-            .dirty(repo, conf)
+            .sha(git, conf)
+            .dirty(git, conf)
             .type(VersionType.RELEASE)
             .build(conf);
     }

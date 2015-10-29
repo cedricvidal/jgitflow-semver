@@ -5,6 +5,8 @@ import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
 import com.quicksign.jgitflowsemver.strategy.Strategy;
 import com.quicksign.jgitflowsemver.version.VersionWithType;
 import org.apache.commons.cli.*;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -15,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.List;
 
 /**
  * @author <a href="mailto:cedric.vidal@quicksign.com">Cedric Vidal, Quicksign</a>
@@ -25,6 +29,7 @@ public class JGitFlowSemver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JGitFlowSemver.class);
     private final GitflowVersioningConfiguration conf;
+    private final Git git;
 
     public static void main(String[] args) throws Exception {
 
@@ -65,7 +70,7 @@ public class JGitFlowSemver {
 
         try {
             Version v = null;
-            final File root = new File(args[0]);
+            final File root = new File(args[0]).getAbsoluteFile();
             final File dir = new File(root, ".git");
             conf.setRepositoryRoot(dir.getPath());
 
@@ -81,9 +86,9 @@ public class JGitFlowSemver {
             }
             System.out.println(adjusted);
         } catch (Exception e) {
-            System.err.println("An error ocured: " + e.getMessage());
-            printUsage(options, System.err);
-            System.out.println("unknown");
+            System.err.println("An error ocured: " + e);
+            LOGGER.error("An error occured", e);
+            System.exit(2);
         }
     }
 
@@ -98,11 +103,12 @@ public class JGitFlowSemver {
         if( headRef == null || headRef.getObjectId() == null ) {
             LOGGER.warn("No commit yet");
         }
+        final List<Ref> branches = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
 
         VersionWithType versionWithType = null;
         for (Strategy strategy : Strategy.STRATEGIES) {
             if(strategy.canInfer(repository, conf)) {
-                versionWithType = strategy.infer(repository, conf);
+                versionWithType = strategy.infer(git, conf);
 
                 if(versionWithType != null) {
                     return versionWithType.getVersion();
@@ -123,7 +129,7 @@ public class JGitFlowSemver {
             .readEnvironment() // scan environment GIT_* variables
             .findGitDir() // scan up the file system tree
             .build();
-
+        this.git = Git.wrap(repository);
     }
 
 }
