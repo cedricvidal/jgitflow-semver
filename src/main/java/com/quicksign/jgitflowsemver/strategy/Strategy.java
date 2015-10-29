@@ -2,6 +2,7 @@ package com.quicksign.jgitflowsemver.strategy;
 
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
 import com.quicksign.jgitflowsemver.version.VersionWithType;
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 
@@ -22,7 +23,7 @@ import java.util.Arrays;
  */
 public interface Strategy {
 
-    public VersionWithType infer(Repository repo, GitflowVersioningConfiguration conf) throws GitAPIException, IOException;
+    public VersionWithType infer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException;
 
     /**
      * Determines if the strategy can infer the version. This is used to match the current branch, for example.

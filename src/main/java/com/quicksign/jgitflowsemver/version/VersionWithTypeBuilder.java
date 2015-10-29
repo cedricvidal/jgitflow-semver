@@ -6,7 +6,6 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.AbbreviatedObjectId;
 import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Repository;
 
 import java.io.IOException;
 
@@ -67,12 +66,12 @@ public class VersionWithTypeBuilder {
     /**
      * Sets the sha part of the version
      *
-     * @param repo
+     * @param git
      * @param conf
      * @return
      */
-    public VersionWithTypeBuilder sha(final Repository repo, final GitflowVersioningConfiguration conf) throws IOException {
-        AbbreviatedObjectId id = repo.resolve(Constants.HEAD).abbreviate(7);
+    public VersionWithTypeBuilder sha(final Git git, final GitflowVersioningConfiguration conf) throws IOException {
+        AbbreviatedObjectId id = git.getRepository().resolve(Constants.HEAD).abbreviate(7);
         sha = conf.getBuildMetadataIds().getSha() + "." + id.name();
 
         return this;
@@ -81,12 +80,12 @@ public class VersionWithTypeBuilder {
     /**
      * Sets the dirty part of the version
      *
-     * @param repo
+     * @param git
      * @param conf
      * @return
      */
-    public VersionWithTypeBuilder dirty(final Repository repo, final GitflowVersioningConfiguration conf) throws GitAPIException {
-        final boolean clean = new Git(repo).status().call().isClean();
+    public VersionWithTypeBuilder dirty(final Git git, final GitflowVersioningConfiguration conf) throws GitAPIException {
+        final boolean clean = git.status().call().isClean();
         if (!clean) {
             dirty = conf.getBuildMetadataIds().getDirty();
         }

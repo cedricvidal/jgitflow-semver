@@ -2,6 +2,7 @@ package com.quicksign.jgitflowsemver.strategy;
 
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
 import com.quicksign.jgitflowsemver.version.*;
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 
@@ -29,16 +30,17 @@ public class BranchHotfixStrategy extends AbstractStrategy implements Strategy {
     private static final String DEFAULT_PREFIX_HOTFIX = "hotfix/";
 
     @Override
-    protected VersionWithType doInfer(Repository repo, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
-        NearestVersion nearestVersion = new NearestVersionLocator().locate(repo);
+    protected VersionWithType doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
+        NearestVersion nearestVersion = new NearestVersionLocator().locate(git);
 
+        final Repository repo = git.getRepository();
         String hotfix = repo.getBranch().substring(getHotfixPrefix(repo).length());
 
         return new VersionWithTypeBuilder(nearestVersion)
             .branch(conf.getPreReleaseIds().getHotfix() + "." + hotfix)
             .distanceFromRelease()
-            .sha(repo, conf)
-            .dirty(repo, conf)
+            .sha(git, conf)
+            .dirty(git, conf)
             .type(VersionType.HOTFIX)
             .build(conf);
     }

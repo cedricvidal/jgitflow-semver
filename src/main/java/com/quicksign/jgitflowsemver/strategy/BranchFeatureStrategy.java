@@ -2,6 +2,7 @@ package com.quicksign.jgitflowsemver.strategy;
 
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
 import com.quicksign.jgitflowsemver.version.*;
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 
@@ -29,9 +30,10 @@ public class BranchFeatureStrategy extends AbstractStrategy implements Strategy 
     private static final String DEFAULT_PREFIX_FEATURE = "feature/";
 
     @Override
-    protected VersionWithType doInfer(Repository repo, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
-        NearestVersion nearestVersion = new NearestVersionLocator().locate(repo);
+    protected VersionWithType doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
+        NearestVersion nearestVersion = new NearestVersionLocator().locate(git);
 
+        final Repository repo = git.getRepository();
         String feature = repo.getBranch().substring(getFeaturePrefix(repo).length());
 
         final NearestVersion nextVersion = new NearestVersion(
@@ -42,8 +44,8 @@ public class BranchFeatureStrategy extends AbstractStrategy implements Strategy 
         return new VersionWithTypeBuilder(nextVersion)
             .branch(conf.getPreReleaseIds().getFeature() + "." + feature)
             .distanceFromRelease(nearestVersion)
-            .sha(repo, conf)
-            .dirty(repo, conf)
+            .sha(git, conf)
+            .dirty(git, conf)
             .type(VersionType.FEATURE)
             .build(conf);
     }
