@@ -5,6 +5,8 @@ import com.quicksign.jgitflowsemver.version.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -15,6 +17,8 @@ import java.io.IOException;
  * @author <a href="mailto:cedric.vidal@quicksign.com">Cedric Vidal, Quicksign</a>
  */
 public class BranchFeatureStrategy extends AbstractStrategy implements Strategy {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BranchDevelopStrategy.class);
 
     @Override
     public boolean canInfer(final Repository repo, GitflowVersioningConfiguration conf) throws IOException {
@@ -40,6 +44,9 @@ public class BranchFeatureStrategy extends AbstractStrategy implements Strategy 
             nearestVersion.getAny().incrementMinorVersion(),
             nearestVersion.getDistanceFromAny()
         );
+        if(LOGGER.isInfoEnabled()) {
+            LOGGER.info("On feature branch so bumping minor version {} -> {}", nearestVersion.getAny().getNormalVersion(), nextVersion.getAny().getNormalVersion());
+        }
 
         return new VersionWithTypeBuilder(nextVersion)
             .branch(conf.getPreReleaseIds().getFeature() + "." + feature)

@@ -68,10 +68,15 @@ public class NearestVersionLocator {
         NearestVersion nearestVersion = null;
         if(releaseInProgress != null) {
             Version releaseInProgressVersion = null;
+            if(LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Found in progress release branch " + releaseInProgress.getName());
+            }
             try {
                 releaseInProgressVersion = Version.valueOf(releaseInProgress.getName().substring("refs/heads/release/".length()));
             } catch (ParseException e) {
-                ; // not a semver version
+                if(LOGGER.isWarnEnabled()) {
+                    LOGGER.warn("Ignoring release branch (name is not semver)" + releaseInProgress.getName());
+                }
             }
 
             if(releaseInProgressVersion != null) {
@@ -83,7 +88,12 @@ public class NearestVersionLocator {
                 // then consider the release branch merge base as the nearest version
                 // otherwise fallback to locate nearest release tag
                 if(distance > 0) {
+                    if(LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Extracted version {} from release branch name {} at {} [MERGE_BASE+{}]", releaseInProgressVersion.getNormalVersion(), releaseId, distance);
+                    }
                     nearestVersion = new NearestVersion(releaseInProgressVersion, distance);
+                } else {
+                    LOGGER.debug("On or behind release branch merge base so doing as if there was no release in progress");
                 }
             }
         }
@@ -112,7 +122,9 @@ public class NearestVersionLocator {
         final String string = repository.getConfig().getString(CONFIG_SECTION_GITFLOW, CONFIG_SUBSECTION_PREFIX, CONFIG_VERSION_TAG);
         final String versionPrefix = (string != null) ? string : DEFAULT_PREFIX_VERSION;
 
-        LOGGER.debug("Locate beginning on branch: " + repository.getBranch());
+        if(LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Locating tags on branch " + repository.getBranch());
+        }
 
         final ObjectId head = repository.resolve(Constants.HEAD);
 
@@ -133,29 +145,35 @@ public class NearestVersionLocator {
             try {
                 final String versionName = tagName.substring(0, 1).equals(versionPrefix) ? tagName.substring(1) : tagName;
                 version = Version.valueOf(versionName);
-                LOGGER.debug("Tag " + tagName + " (" + tag.getObjectId().abbreviate(7) + ") parsed as " + version + " version.");
             } catch (Exception e) {
-                LOGGER.debug("Tag " + tagName + " (" + tag.getObjectId().abbreviate(7) + ") could not be parsed as version.");
+                if(LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("Ignoring tag " + tagName + " at " + tag.getObjectId().abbreviate(7).name() + "(not semver)");
+                }
             }
 
             if (version != null) {
                 int distance = 0;
                 Version candidateVersion = null;
                 if (tagCommit.equals(head)) {
-                    LOGGER.debug("Tag " + tagName + " is at head. Including as candidate.");
+                    if(LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Extracted version {} from tag {} at {} [HEAD+{}] (on HEAD)", version.getNormalVersion(), tagName, tag.getObjectId().abbreviate(7).name(), distance);
+                    }
                     candidateVersion = version;
                 } else {
 
                     if (JGitUtil.isAncestorOf(repository, tagCommit, head)) {
-                        LOGGER.debug("Tag " + String.valueOf(tagName) + " is an ancestor of HEAD. Including as a candidate.");
                         candidateVersion = version;
 
                         distance = size(git.log().addRange(tagCommit, head).call());
 
-                        LOGGER.debug("Reachable commits after tag " + tag.getName() + ": {}", distance);
+                        if(LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Extracted version {} from tag {} at {} [HEAD+{}] (ancestor of HEAD)", version.getNormalVersion(), tagName, tag.getObjectId().abbreviate(7).name(), distance);
+                        }
 
                     } else {
-                        LOGGER.debug("Tag " + tagName + " is not an ancestor of HEAD. Excluding as a candidate.");
+                        if(LOGGER.isTraceEnabled()) {
+                            LOGGER.trace("Ignoring tag " + tagName + " at " + tag.getObjectId().abbreviate(7).name() + " (not an ancestor of HEAD)");
+                        }
                     }
 
                 }
@@ -171,6 +189,10 @@ public class NearestVersionLocator {
 
         Version anyVersion = minVersion != null ? minVersion : Version.valueOf("0.0.0");
         int distanceFromAny = minVersion != null ? minDistance : size(git.log().call());
+
+        if(LOGGER.isInfoEnabled()) {
+            LOGGER.info("Closest tag is " + minVersion.getNormalVersion() + " at " + minObjectId.abbreviate(7).name() + " [HEAD+" + minDistance + "]");
+        }
 
         return new NearestVersion(anyVersion, distanceFromAny).objectId(minObjectId);
     }
