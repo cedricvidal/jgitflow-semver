@@ -10,9 +10,29 @@ Provides [Semantic Versioning](http://semver.org/) using Gitflow. Highly based o
 Versioning
 ---
 
-See [amkay's gradle-gitflow](https://github.com/amkay/gradle-gitflow/tree/v0.2.0)
+TODO
+
+Requirements
+---
+
+JRE 7+
+
+Installation
+---
+
+On OSX
+
+```
+brew tap cedricvidal/tap
+brew install jgitflow-semver
+```
 
 Usage
 ---
 
-TODO
+```
+usage: jgitflow-semver [options]... <path>
+ -b,--branch <arg>   force branch name in case of a detached repo
+ -m,--maven          Maven compatible semver versions
+ -s,--snapshot       Use Maven SNAPSHOT instead of semver build metadata 
+```
