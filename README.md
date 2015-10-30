@@ -10,7 +10,7 @@ Provides [Semantic Versioning](http://semver.org/) using Gitflow. Highly based o
 ASCIInema First look
 ---
 
-[![asciicast](https://asciinema.org/a/34s5tl2oocvmfgi2yxeblcjs3.png)](https://asciinema.org/a/34s5tl2oocvmfgi2yxeblcjs3)
+[![asciicast](https://asciinema.org/a/3bvlof1o9a6a7je53rvjncow2.png)](https://asciinema.org/a/3bvlof1o9a6a7je53rvjncow2)
 
 Requirements
 ---
