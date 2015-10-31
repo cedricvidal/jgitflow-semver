@@ -1,11 +1,12 @@
 package com.quicksign.jgitflowsemver;
 
+import com.github.zafarkhaja.semver.Version;
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
-import com.quicksign.jgitflowsemver.strategy.Strategy;
+import com.quicksign.jgitflowsemver.strategy.JGitflowInferencer;
 import com.quicksign.jgitflowsemver.version.InferredVersion;
+import com.quicksign.jgitflowsemver.version.SemVersionBuilder;
 import org.apache.commons.cli.*;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -16,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.List;
 
 /**
  * @author <a href="mailto:cedric.vidal@quicksign.com">Cedric Vidal, Quicksign</a>
@@ -67,7 +67,7 @@ public class JGitFlowSemver {
         }
 
         try {
-            InferredVersion v = null;
+            Version v = null;
             final File root = new File(args[0]).getAbsoluteFile();
             final File dir = new File(root, ".git");
             conf.setRepositoryRoot(dir.getPath());
@@ -78,7 +78,7 @@ public class JGitFlowSemver {
             }
 
             v = new JGitFlowSemver(dir, conf).infer();
-            String adjusted = v.getVersion().toString();
+            String adjusted = v.toString();
             if(conf.isMavenCompatibility()) {
                 adjusted = adjusted.replaceAll("\\+", ".");
             }
@@ -95,26 +95,16 @@ public class JGitFlowSemver {
         formatter.printHelp("jgitflow-semver [options]... <path>", options, false);
     }
 
-    public InferredVersion infer() throws Exception {
+    public Version infer() throws Exception {
 
         Ref headRef = repository.getRef( Constants.HEAD );
         if( headRef == null || headRef.getObjectId() == null ) {
             LOGGER.warn("No commit yet");
         }
-        final List<Ref> branches = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
 
-        InferredVersion inferredVersion = null;
-        for (Strategy strategy : Strategy.STRATEGIES) {
-            if(strategy.canInfer(repository, conf)) {
-                inferredVersion = strategy.infer(git, conf);
-
-                if(inferredVersion != null) {
-                    return inferredVersion;
-                }
-            }
-        }
-
-        return null;
+        final InferredVersion version = new JGitflowInferencer().infer(git, conf);
+        Version semVersion = new SemVersionBuilder().build(version, conf);
+        return semVersion;
 
     }
 

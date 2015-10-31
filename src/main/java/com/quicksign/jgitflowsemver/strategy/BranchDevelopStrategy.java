@@ -38,13 +38,12 @@ public class BranchDevelopStrategy extends AbstractStrategy implements Strategy 
 
         final NearestVersion nextVersion = new NearestVersion(nextVersioNormal, 0);
 
-        return new InferredVersionBuilder().build(new VersionContext(nextVersion)
+        return new InferredVersion(nextVersion)
             .branch(conf.getPreReleaseIds().getDevelop())
             .distanceFromRelease(nearestVersion)
             .sha(git, conf)
             .dirty(git, conf)
-            .type(VersionType.DEVELOP),
-            conf);
+            .type(VersionType.DEVELOP);
     }
 
 }

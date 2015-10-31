@@ -7,7 +7,7 @@ import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
  * @author Max Käufer
  * @author <a href="mailto:cedric.vidal@quicksign.com">Cedric Vidal, Quicksign</a>
  */
-public class InferredVersionBuilder {
+public class SemVersionBuilder {
 
     /**
      * Builds the version
@@ -15,41 +15,41 @@ public class InferredVersionBuilder {
      * @return
      * @param conf
      */
-    public InferredVersion build(VersionContext ctx, GitflowVersioningConfiguration conf) {
+    public Version build(InferredVersion inferredVersion, GitflowVersioningConfiguration conf) {
         Version version;
         if(!conf.isUseMavenSnapshot()) {
             StringBuilder preRelease = new StringBuilder();
             StringBuilder buildMetadata = new StringBuilder();
 
-            if(ctx.getDistanceFromRelease() > 0) {
-                append(preRelease, ctx.getBranch());
-                append(preRelease, Integer.toString(ctx.getDistanceFromRelease()));
-                append(buildMetadata, ctx.getSha());
+            if(inferredVersion.getDistanceFromRelease() > 0) {
+                append(preRelease, inferredVersion.getBranch());
+                append(preRelease, Integer.toString(inferredVersion.getDistanceFromRelease()));
+                append(buildMetadata, inferredVersion.getSha());
             }
 
-            if(ctx.isDirty()) {
+            if(inferredVersion.isDirty()) {
                 append(buildMetadata, conf.getBuildMetadataIds().getDirty());
             }
 
-            version = new Version.Builder(ctx.getNormal().getNormalVersion())
+            version = new Version.Builder(inferredVersion.getNormal().getNormalVersion())
                 .setPreReleaseVersion(preRelease.toString())
                 .setBuildMetadata(buildMetadata.toString())
                 .build();
 
         } else {
             StringBuilder buildMetadata = new StringBuilder();
-            if(ctx.getDistanceFromRelease() > 0) {
-                if(ctx.getBranch() != null && ctx.getBranch().length() > 0 && !conf.getPreReleaseIds().getDevelop().equals(ctx.getBranch())) {
-                    buildMetadata.append(ctx.getBranch()).append('.');
+            if(inferredVersion.getDistanceFromRelease() > 0) {
+                if(inferredVersion.getBranch() != null && inferredVersion.getBranch().length() > 0 && !conf.getPreReleaseIds().getDevelop().equals(inferredVersion.getBranch())) {
+                    buildMetadata.append(inferredVersion.getBranch()).append('.');
                 }
                 buildMetadata.append("SNAPSHOT");
             }
-            version = new Version.Builder(ctx.getNormal().getNormalVersion())
+            version = new Version.Builder(inferredVersion.getNormal().getNormalVersion())
                 .setPreReleaseVersion(buildMetadata.toString())
                 .build();
         }
 
-        return new InferredVersion(version, ctx);
+        return version;
     }
 
     private void append(final StringBuilder sb, final String s) {

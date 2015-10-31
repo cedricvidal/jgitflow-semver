@@ -36,13 +36,12 @@ public class BranchHotfixStrategy extends AbstractStrategy implements Strategy {
         final Repository repo = git.getRepository();
         String hotfix = repo.getBranch().substring(getHotfixPrefix(repo).length());
 
-        return new InferredVersionBuilder().build(new VersionContext(nearestVersion)
+        return new InferredVersion(nearestVersion)
             .branch(conf.getPreReleaseIds().getHotfix() + "." + hotfix)
             .distanceFromRelease()
             .sha(git, conf)
             .dirty(git, conf)
-            .type(VersionType.HOTFIX),
-            conf);
+            .type(VersionType.HOTFIX);
     }
 
 }

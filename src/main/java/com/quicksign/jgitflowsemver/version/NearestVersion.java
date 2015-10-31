@@ -41,4 +41,8 @@ public class NearestVersion {
     public ObjectId getObjectId() {
         return objectId;
     }
+
+    public static NearestVersion nearest(Version any, int distanceFromAny) {
+        return new NearestVersion(any, distanceFromAny);
+    }
 }

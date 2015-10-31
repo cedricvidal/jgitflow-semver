@@ -40,13 +40,12 @@ public class BranchFeatureStrategy extends AbstractStrategy implements Strategy 
         final Repository repo = git.getRepository();
         String feature = repo.getBranch().substring(getFeaturePrefix(repo).length());
 
-        return new InferredVersionBuilder().build(new VersionContext(nextVersion)
+        return new InferredVersion(nextVersion)
             .branch(conf.getPreReleaseIds().getFeature() + "." + feature)
             .distanceFromRelease(nearestVersion)
             .sha(git, conf)
             .dirty(git, conf)
-            .type(VersionType.FEATURE),
-            conf);
+            .type(VersionType.FEATURE);
     }
 
 }

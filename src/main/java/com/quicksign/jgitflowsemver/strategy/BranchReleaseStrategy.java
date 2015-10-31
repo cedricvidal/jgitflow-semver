@@ -33,13 +33,12 @@ public class BranchReleaseStrategy extends AbstractStrategy implements Strategy 
     protected InferredVersion doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
         NearestVersion nearestVersion = new NearestVersionLocator().locate(git);
 
-        return new InferredVersionBuilder().build(new VersionContext(nearestVersion)
+        return new InferredVersion(nearestVersion)
             .branch(conf.preReleaseIds().getRelease())
             .distanceFromRelease()
             .sha(git, conf)
             .dirty(git, conf)
-            .type(VersionType.RELEASE),
-            conf);
+            .type(VersionType.RELEASE);
     }
 
 }

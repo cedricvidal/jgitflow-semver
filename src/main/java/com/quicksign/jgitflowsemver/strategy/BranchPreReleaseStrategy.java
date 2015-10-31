@@ -50,13 +50,12 @@ public class BranchPreReleaseStrategy extends AbstractStrategy implements Strate
         final Repository repo = git.getRepository();
         final Version releaseVersion = extractReleaseOrHotfixVersion(repo, repo.getBranch());
 
-        return new InferredVersionBuilder().build(new VersionContext(releaseVersion)
+        return new InferredVersion(releaseVersion)
             .branch(conf.getPreReleaseIds().getPreRelease())
             .distanceFromRelease(nearestVersion)
             .sha(git, conf)
             .dirty(git, conf)
-            .type(VersionType.PRE_RELEASE),
-            conf);
+            .type(VersionType.PRE_RELEASE);
     }
 
 }
