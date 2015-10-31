@@ -6,25 +6,26 @@ import com.github.zafarkhaja.semver.Version;
  * @author Max Käufer
  * @author <a href="mailto:cedric.vidal@quicksign.com">Cedric Vidal, Quicksign</a>
  */
-public class VersionWithType implements Comparable<Version> {
+public class InferredVersion implements Comparable<Version> {
     private final Version version;
-    private final VersionType type;
+
+    private final VersionContext context;
 
     /**
      * @param version the version
-     * @param type    the type of the version
+     * @param context the context of inferred version
      */
-    public VersionWithType(final Version version, final VersionType type) {
+    public InferredVersion(final Version version, final VersionContext context) {
         this.version = version;
-        this.type = type;
+        this.context = context;
     }
 
     public Version getVersion() {
         return version;
     }
 
-    public VersionType getType() {
-        return type;
+    public VersionContext getContext() {
+        return context;
     }
 
     @Override

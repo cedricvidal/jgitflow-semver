@@ -22,16 +22,16 @@ public class DetachedHeadStrategy extends AbstractStrategy implements Strategy {
     }
 
     @Override
-    protected VersionWithType doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
+    protected InferredVersion doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
         NearestVersion nearestVersion = new NearestVersionLocator().locate(git);
 
-        return new VersionWithTypeBuilder(nearestVersion)
+        return new InferredVersionBuilder().build(new VersionContext(nearestVersion)
             .branch(conf.preReleaseIds().getDetachedHead())
             .distanceFromRelease()
             .sha(git, conf)
             .dirty(git, conf)
-            .type(VersionType.DETACHED_HEAD)
-            .build(conf);
+            .type(VersionType.DETACHED_HEAD),
+            conf);
     }
 
 }

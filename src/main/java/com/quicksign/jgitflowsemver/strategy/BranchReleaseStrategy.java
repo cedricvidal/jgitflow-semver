@@ -30,16 +30,16 @@ public class BranchReleaseStrategy extends AbstractStrategy implements Strategy 
     private static final String DEFAULT_BRANCH_RELEASE = "master";
 
     @Override
-    protected VersionWithType doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
+    protected InferredVersion doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
         NearestVersion nearestVersion = new NearestVersionLocator().locate(git);
 
-        return new VersionWithTypeBuilder(nearestVersion)
+        return new InferredVersionBuilder().build(new VersionContext(nearestVersion)
             .branch(conf.preReleaseIds().getRelease())
             .distanceFromRelease()
             .sha(git, conf)
             .dirty(git, conf)
-            .type(VersionType.RELEASE)
-            .build(conf);
+            .type(VersionType.RELEASE),
+            conf);
     }
 
 }

@@ -30,19 +30,19 @@ public class BranchHotfixStrategy extends AbstractStrategy implements Strategy {
     private static final String DEFAULT_PREFIX_HOTFIX = "hotfix/";
 
     @Override
-    protected VersionWithType doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
+    protected InferredVersion doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
         NearestVersion nearestVersion = new NearestVersionLocator().locate(git);
 
         final Repository repo = git.getRepository();
         String hotfix = repo.getBranch().substring(getHotfixPrefix(repo).length());
 
-        return new VersionWithTypeBuilder(nearestVersion)
+        return new InferredVersionBuilder().build(new VersionContext(nearestVersion)
             .branch(conf.getPreReleaseIds().getHotfix() + "." + hotfix)
             .distanceFromRelease()
             .sha(git, conf)
             .dirty(git, conf)
-            .type(VersionType.HOTFIX)
-            .build(conf);
+            .type(VersionType.HOTFIX),
+            conf);
     }
 
 }

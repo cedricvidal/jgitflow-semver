@@ -1,7 +1,7 @@
 package com.quicksign.jgitflowsemver.strategy;
 
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
-import com.quicksign.jgitflowsemver.version.VersionWithType;
+import com.quicksign.jgitflowsemver.version.InferredVersion;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
@@ -15,11 +15,11 @@ import java.io.IOException;
 public abstract class AbstractStrategy implements Strategy {
 
     @Override
-    public VersionWithType infer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
+    public InferredVersion infer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
         return doInfer(git, conf);
     }
 
-    protected abstract VersionWithType doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException;
+    protected abstract InferredVersion doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException;
 
     /**
      * Helper method to retrieve a Gitflow branch prefix from .git/config

@@ -1,9 +1,8 @@
 package com.quicksign.jgitflowsemver;
 
-import com.github.zafarkhaja.semver.Version;
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
 import com.quicksign.jgitflowsemver.strategy.Strategy;
-import com.quicksign.jgitflowsemver.version.VersionWithType;
+import com.quicksign.jgitflowsemver.version.InferredVersion;
 import org.apache.commons.cli.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
@@ -17,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.List;
 
 /**
@@ -69,7 +67,7 @@ public class JGitFlowSemver {
         }
 
         try {
-            Version v = null;
+            InferredVersion v = null;
             final File root = new File(args[0]).getAbsoluteFile();
             final File dir = new File(root, ".git");
             conf.setRepositoryRoot(dir.getPath());
@@ -80,7 +78,7 @@ public class JGitFlowSemver {
             }
 
             v = new JGitFlowSemver(dir, conf).infer();
-            String adjusted = v.toString();
+            String adjusted = v.getVersion().toString();
             if(conf.isMavenCompatibility()) {
                 adjusted = adjusted.replaceAll("\\+", ".");
             }
@@ -97,7 +95,7 @@ public class JGitFlowSemver {
         formatter.printHelp("jgitflow-semver [options]... <path>", options, false);
     }
 
-    public Version infer() throws Exception {
+    public InferredVersion infer() throws Exception {
 
         Ref headRef = repository.getRef( Constants.HEAD );
         if( headRef == null || headRef.getObjectId() == null ) {
@@ -105,13 +103,13 @@ public class JGitFlowSemver {
         }
         final List<Ref> branches = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
 
-        VersionWithType versionWithType = null;
+        InferredVersion inferredVersion = null;
         for (Strategy strategy : Strategy.STRATEGIES) {
             if(strategy.canInfer(repository, conf)) {
-                versionWithType = strategy.infer(git, conf);
+                inferredVersion = strategy.infer(git, conf);
 
-                if(versionWithType != null) {
-                    return versionWithType.getVersion();
+                if(inferredVersion != null) {
+                    return inferredVersion;
                 }
             }
         }

@@ -44,19 +44,19 @@ public class BranchPreReleaseStrategy extends AbstractStrategy implements Strate
     private static final String DEFAULT_PREFIX_PRE_RELEASE = "release/";
 
     @Override
-    protected VersionWithType doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
+    protected InferredVersion doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
         NearestVersion nearestVersion = new NearestVersionLocator().locate(git);
 
         final Repository repo = git.getRepository();
         final Version releaseVersion = extractReleaseOrHotfixVersion(repo, repo.getBranch());
 
-        return new VersionWithTypeBuilder(releaseVersion.toString())
+        return new InferredVersionBuilder().build(new VersionContext(releaseVersion)
             .branch(conf.getPreReleaseIds().getPreRelease())
             .distanceFromRelease(nearestVersion)
             .sha(git, conf)
             .dirty(git, conf)
-            .type(VersionType.PRE_RELEASE)
-            .build(conf);
+            .type(VersionType.PRE_RELEASE),
+            conf);
     }
 
 }

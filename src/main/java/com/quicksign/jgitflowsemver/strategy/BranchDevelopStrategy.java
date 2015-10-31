@@ -31,20 +31,20 @@ public class BranchDevelopStrategy extends AbstractStrategy implements Strategy 
     private static final String DEFAULT_BRANCH_DEVELOP = "develop";
 
     @Override
-    protected VersionWithType doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
+    protected InferredVersion doInfer(Git git, GitflowVersioningConfiguration conf) throws GitAPIException, IOException {
 
         NearestVersion nearestVersion = new NearestVersionLocator().locate(git);
         Version nextVersioNormal = nearestVersion.getAny().incrementMinorVersion();
 
         final NearestVersion nextVersion = new NearestVersion(nextVersioNormal, 0);
 
-        return new VersionWithTypeBuilder(nextVersion)
+        return new InferredVersionBuilder().build(new VersionContext(nextVersion)
             .branch(conf.getPreReleaseIds().getDevelop())
             .distanceFromRelease(nearestVersion)
             .sha(git, conf)
             .dirty(git, conf)
-            .type(VersionType.DEVELOP)
-            .build(conf);
+            .type(VersionType.DEVELOP),
+            conf);
     }
 
 }
