@@ -3,7 +3,6 @@ package com.quicksign.jgitflowsemver.android;
 import com.github.zafarkhaja.semver.Version;
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
 import com.quicksign.jgitflowsemver.version.InferredVersion;
-import com.quicksign.jgitflowsemver.version.NearestVersion;
 import org.junit.Before;
 import org.junit.Test;
 
