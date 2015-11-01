@@ -1,6 +1,7 @@
 package com.quicksign.jgitflowsemver;
 
 import com.github.zafarkhaja.semver.Version;
+import com.quicksign.jgitflowsemver.android.AndroidVersionCodeBuilder;
 import com.quicksign.jgitflowsemver.dsl.GitflowVersioningConfiguration;
 import com.quicksign.jgitflowsemver.strategy.JGitflowInferencer;
 import com.quicksign.jgitflowsemver.version.InferredVersion;
@@ -37,11 +38,15 @@ public class JGitFlowSemver {
         options.addOption("b", "branch", true, "force branch name in case of a detached repo");
         options.addOption("s", "snapshot", false, "Use Maven SNAPSHOT instead of semver build metadata");
         options.addOption("m", "maven", false, "Maven compatible semver versions");
+        options.addOption("a", "androidVersionCode", false, "Android version code");
+        options.addOption("e", "envPrefix", true, "Environment prefix to export variables to");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse( options, args);
 
         final GitflowVersioningConfiguration conf = new GitflowVersioningConfiguration();
+        String envPrevix = null;
+        boolean inferAndroidVersionCode = false;
         try {
             // parse the command line arguments
             CommandLine line = parser.parse( options, args );
@@ -54,6 +59,8 @@ public class JGitFlowSemver {
             if(line.hasOption('m')) {
                 conf.mavenCompatibility();
             }
+            envPrevix = line.getOptionValue('e');
+            inferAndroidVersionCode = line.hasOption('a');
             args = line.getArgs();
         }
         catch( ParseException exp ) {
@@ -67,7 +74,7 @@ public class JGitFlowSemver {
         }
 
         try {
-            Version v = null;
+            InferredVersion v = null;
             final File root = new File(args[0]).getAbsoluteFile();
             final File dir = new File(root, ".git");
             conf.setRepositoryRoot(dir.getPath());
@@ -78,11 +85,30 @@ public class JGitFlowSemver {
             }
 
             v = new JGitFlowSemver(dir, conf).infer();
-            String adjusted = v.toString();
+            Integer androidVersionCode = null;
+            if(inferAndroidVersionCode) {
+                androidVersionCode = new AndroidVersionCodeBuilder().build(v, conf);
+            }
+            Version semVersion = new SemVersionBuilder().build(v, conf);
+
+            String adjusted = semVersion.toString();
             if(conf.isMavenCompatibility()) {
                 adjusted = adjusted.replaceAll("\\+", ".");
             }
-            System.out.println(adjusted);
+
+            if(envPrevix == null) {
+                if(inferAndroidVersionCode) {
+                    adjusted = androidVersionCode.toString();
+                }
+                System.out.println(adjusted);
+            } else {
+                StringBuilder sb = new StringBuilder();
+                sb.append("export " + envPrevix + "_VERSION=" + adjusted + "\n");
+                if(inferAndroidVersionCode) {
+                    sb.append("export " + envPrevix + "_ANDROID_VERSION_CODE=" + androidVersionCode + "\n");
+                }
+                System.out.println(sb);
+            }
         } catch (Exception e) {
             System.err.println("An error ocured: " + e);
             LOGGER.error("An error occured", e);
@@ -95,7 +121,7 @@ public class JGitFlowSemver {
         formatter.printHelp("jgitflow-semver [options]... <path>", options, false);
     }
 
-    public Version infer() throws Exception {
+    public InferredVersion infer() throws Exception {
 
         Ref headRef = repository.getRef( Constants.HEAD );
         if( headRef == null || headRef.getObjectId() == null ) {
@@ -103,9 +129,7 @@ public class JGitFlowSemver {
         }
 
         final InferredVersion version = new JGitflowInferencer().infer(git, conf);
-        Version semVersion = new SemVersionBuilder().build(version, conf);
-        return semVersion;
-
+        return version;
     }
 
     public JGitFlowSemver(File dir, GitflowVersioningConfiguration conf) throws IOException {
