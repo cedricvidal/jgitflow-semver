@@ -101,12 +101,19 @@ task proguard(type: proguard.gradle.ProGuardTask, dependsOn: 'shadowJar') {
     keep "public class $mainClassName"
 }
 
-task script(dependsOn: 'proguard') << {
-    ant.concat(destfile: "${project.buildDir}/${project.name}-${version}.sh", binary: true) {
-        fileset(file: 'src/script/stub.sh')
-        fileset(file: "${project.buildDir}/libs/${project.name}-${version}-min.jar")
+task script(dependsOn: 'proguard') {
+    ext.destFile = "${project.buildDir}/${project.name}-${version}.sh"
+    ext.stub = 'src/script/stub.sh'
+    ext.jarFile = "${project.buildDir}/libs/${project.name}-${version}-min.jar"
+    inputs.file jarFile
+    outputs.file destFile
+    doLast {
+        ant.concat(destfile: destFile, binary: true) {
+            fileset(file: stub)
+            fileset(file: jarFile)
+        }
+        ant.chmod(file: destFile, perm: "a+x")
     }
-    ant.chmod(file: "${project.buildDir}/${project.name}-${version}.sh", perm: "a+x")
 }
 
 task sourceJar(type: Jar) {
