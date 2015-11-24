@@ -8,5 +8,5 @@ JGFSVD=~/.jgitflow-semver/$V;JGFSV=$JGFSVD/jgitflow-semver-$V.sh; ([ ! -f $JGFSV
 rm ~/.jgitflow-semver/jgitflow-semver 2>/dev/null
 ln -s $JGFSV ~/.jgitflow-semver/jgitflow-semver
 
-export PATH=$PATH:~/.jgitflow-semver/jgitflow-semver
+export PATH=$PATH:~/.jgitflow-semver
 
