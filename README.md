@@ -148,6 +148,12 @@ or storing it in a file to load it in you CI process:
 jgitflow-semver -s -m -b $bamboo_repository_branch_name . > .git/.git_flow_version
 ```
 
+Note: if your CI server doesn't honor the PATH variable update by the install script then you can call the program directly from there
+
+```
+~/.jgitflow-semver/jgitflow-semver
+```
+
 You can then load the inferred version from `.git/.git_flow_version` file and use it to call maven. Task `Variable File reader` for Bamboo.
 
 Beware that `$bamboo_repository_branch_name` must be replaced by the variable that your CI server exports the current branch name to. Indeed, most CI servers checkout in detached mode which means you need to tell `jgitflow-semver` what branch to compute version from.
