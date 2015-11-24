@@ -1,7 +1,7 @@
 QuickSign JGitFlow SemVer
 =========================
 
-Provides [Semantic Versioning](http://semver.org/) using Gitflow. Highly based on [amkay's gradle-gitflow](https://github.com/amkay/gradle-gitflow) work but rewritten in pure Java without any Gradle dependencies and focused on being used as a JVM library and as a standalone command line program that you can call from your build system.
+Provides [Semantic Versioning](http://semver.org/) using [Gitflow AVH Edition](https://github.com/petervanderdoes/gitflow-avh). Highly based on [amkay's gradle-gitflow](https://github.com/amkay/gradle-gitflow) work but rewritten in pure Java without any Gradle dependencies and focused on being used as a JVM library and as a standalone command line program that you can call from your build system.
 
 It has special Maven semantics options (`-m` and `-s`) but really is meant to be used in any build system for any language.
 
@@ -9,15 +9,56 @@ It has special Maven semantics options (`-m` and `-s`) but really is meant to be
 [![Code Coverage](https://img.shields.io/codecov/c/github/cedricvidal/jgitflow-semver/develop.svg)](https://codecov.io/github/cedricvidal/jgitflow-semver?branch=develop)
 ![image](https://img.shields.io/badge/license-Apache%202-blue.svg)
 
-ASCIInema First look
+Quickstart
 ---
 
 [![asciicast](https://asciinema.org/a/0bth8psrcgp2hc11bj7uw02ji.png)](https://asciinema.org/a/0bth8psrcgp2hc11bj7uw02ji)
 
+Version structure
+---
+
+The inferred versions follow [SemVer](http://semver.org/) rules, they consist of the following components:
+
+```
+1.2.3-dev.65+sha.9066228.dirty
+| | |  |  |   |     |      |
+| | |  |  |   |     |      indicates if the repository is dirty
+| | |  |  |   |     |
+| | |  |  |   |     abbreviated SHA of the current commit
+| | |  |  |   |
+| | |  |  |   prefix of the SHA
+| | |  |  |
+| | |  |  # of commits since the last tag
+| | |  |
+| | |  denotes the current branch
+| | |
+| | patch version
+| |
+| minor version
+|
+major version
+```
+
+Mapping between Gitflow branches, pre-release identifiers and versions
+---
+
+| Gitflow branch       | Default name in Gitflow plugins | Pre-release identifier | Normal version |
+| -------------------- | --------------- | ------------- | ------------- | ------------- |
+| production release   | `master`        | (empty string) | Take the closest tag |
+| development          | `develop`       | `dev` | Take the closest tag (or extract next version from release branch if it currently exists) and increment minor version |
+| feature              | `feature/foo`   | `feature.foo` | Take the closest tag and increment minor version |
+| next release         | `release/1.2.0` | `pre` | Extracted from the branch name -> `1.2.0` |
+| versioned hotfix     | `hotfix/1.2.1`  | `pre` | Behaves as a release, version is extracted from branch name -> `1.2.1` |
+| non versioned hotfix | `hotfix/foo`    | `fix.foo` | Take the closest tag |
+| support              | `support/foo`   | `support.foo` | Take the closest tag and increment minor version |
+
+NB: tags are considered version tags if they follow SemVer rules. They can optionnally be prefixed with `v`. Any other tag is ignored, you are therefore safe to create other tags if you will
+
 Requirements
 ---
 
-JRE 7+
+- JRE 7+
+- [Gitflow AVH Edition](https://github.com/petervanderdoes/gitflow-avh)
 
 Installation
 ---
