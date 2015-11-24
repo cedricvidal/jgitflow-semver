@@ -29,6 +29,12 @@ brew tap cedricvidal/tap
 brew install jgitflow-semver
 ```
 
+Basic shell installation
+
+```
+eval "$(curl -fsSL https://raw.githubusercontent.com/cedricvidal/jgitflow-semver/master/install)"
+```
+
 Command Line Usage
 ---
 
@@ -80,28 +86,25 @@ NB: You might get a warning telling that the `<version/>` tag cannot use a varia
 Maven Integration in CI server
 ---
 
-On your CI server, you need to download `jgitflow-semver` and tell it the branch name to compute version for because often, CI servers checkout in detached mode.
+On your CI server, you need to install `jgitflow-semver` and tell it the branch name to compute version for because often, CI servers checkout in detached mode.
 
-You can download `jgitflow-semver` using the following code snippet (here with a bash script):
+You can download `jgitflow-semver` using the following code snippet:
 
 ```
-V=0.2.1;JGFSVD=~/.jgitflow-semver/$V;JGFSV=$JGFSVD/jgitflow-semver-$V.sh; ([ ! -f $JGFSV ] && \
-	mkdir -p $JGFSVD && \
-    wget -q -O $JGFSV http://dl.bintray.com/cedric-vidal/jgitflow-semver/com/quicksign/jgitflow-semver/jgitflow-semver/$V/jgitflow-semver-$V-script.sh && \
-    chmod a+x $JGFSV)
+eval "$(curl -fsSL https://raw.githubusercontent.com/cedricvidal/jgitflow-semver/master/install)"
 ```
 
 You can then call `jgitflow-semver` by storing it in a variable and calling maven directly
 
 ```
-export GIT_FLOW_VERSION=`$JGFSV -s -m -b $bamboo_repository_branch_name .`
+export GIT_FLOW_VERSION=`jgitflow-semver -s -m -b $bamboo_repository_branch_name .`
 mvn clean package -DGIT_FLOW_VERSION=$GIT_FLOW_VERSION
 ```
 
 or storing it in a file to load it in you CI process:
 
 ```
-$JGFSV -s -m -b $bamboo_repository_branch_name . > .git/.git_flow_version
+jgitflow-semver -s -m -b $bamboo_repository_branch_name . > .git/.git_flow_version
 ```
 
 You can then load the inferred version from `.git/.git_flow_version` file and use it to call maven. Task `Variable File reader` for Bamboo.
