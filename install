@@ -3,10 +3,9 @@ V=0.2.1
 
 JGFSVD=~/.jgitflow-semver/$V;JGFSV=$JGFSVD/jgitflow-semver-$V.sh; ([ ! -f $JGFSV ] && mkdir -p $JGFSVD && \
     wget -q -O $JGFSV http://dl.bintray.com/cedric-vidal/jgitflow-semver/com/quicksign/jgitflow-semver/jgitflow-semver/$V/jgitflow-semver-$V-script.sh && \
-    chmod a+x $JGFSV || exit 0) && [ `md5 -q $JGFSV` == "90e7e6a8be2c198824e4d443f6f6f68e" ]
+    chmod a+x $JGFSV || exit 0)
 
 rm ~/.jgitflow-semver/jgitflow-semver 2>/dev/null
 ln -s $JGFSV ~/.jgitflow-semver/jgitflow-semver
 
 export PATH=$PATH:~/.jgitflow-semver
-
