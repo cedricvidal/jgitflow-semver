@@ -122,6 +122,12 @@ or compute `SNAPSHOT` maven version using
 mvn clean package -DGIT_FLOW_VERSION=`jgitflow-semver -m -s`
 ```
 
+or compute `non SNAPSHOT` maven version using 
+
+```Shell
+mvn clean package -DGIT_FLOW_VERSION=`jgitflow-semver -m`
+```
+
 NB: You might get a warning telling that the `<version/>` tag cannot use a variable but just ignore it, the Maven team at some point wanted to remove support for it but they have changed their mind recently and support will stay.
 
 Maven Integration in CI server
