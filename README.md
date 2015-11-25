@@ -65,21 +65,21 @@ Installation
 
 On OSX
 
-```
+```Shell
 brew tap cedricvidal/tap
 brew install jgitflow-semver
 ```
 
 Basic shell installation
 
-```
+```Shell
 eval "$(curl -fsSL https://raw.githubusercontent.com/cedricvidal/jgitflow-semver/master/install)"
 ```
 
 Command Line Usage
 ---
 
-```
+```Shell
 usage: jgitflow-semver [options]... <path>
  -b,--branch <arg>   force branch name in case of a detached repo
  -m,--maven          Maven compatible semver versions
@@ -91,7 +91,7 @@ Maven Integration using command line program
 
 Use a variable (`GIT_FLOW_VERSION` here) in pom.xml's `<version/>` tag
 
-```
+```Maven POM
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -112,13 +112,13 @@ Use a variable (`GIT_FLOW_VERSION` here) in pom.xml's `<version/>` tag
 
 In local development, you can either use default `dev` version
 
-```
+```Shell
 mvn clean package
 ```
 
 or compute `SNAPSHOT` maven version using 
 
-```
+```Shell
 mvn clean package -DGIT_FLOW_VERSION=`jgitflow-semver -m -s`
 ```
 
@@ -131,26 +131,26 @@ On your CI server, you need to install `jgitflow-semver` and tell it the branch 
 
 You can download `jgitflow-semver` using the following code snippet:
 
-```
+```Shell
 eval "$(curl -fsSL https://raw.githubusercontent.com/cedricvidal/jgitflow-semver/master/install)"
 ```
 
 You can then call `jgitflow-semver` by storing it in a variable and calling maven directly
 
-```
+```Shell
 export GIT_FLOW_VERSION=`jgitflow-semver -s -m -b $bamboo_repository_branch_name .`
 mvn clean package -DGIT_FLOW_VERSION=$GIT_FLOW_VERSION
 ```
 
 or storing it in a file to load it in you CI process:
 
-```
+```Shell
 jgitflow-semver -s -m -b $bamboo_repository_branch_name . > .git/.git_flow_version
 ```
 
 Note: if your CI server doesn't honor the PATH variable update by the install script then you can call the program directly from there
 
-```
+```Shell
 ~/.jgitflow-semver/jgitflow-semver
 ```
 
