@@ -13,7 +13,7 @@ public class BranchVersionExtractor implements VersionExtractor {
     protected Pattern versionHotfixPattern;
 
     public BranchVersionExtractor(String prefix) {
-        this.versionHotfixPattern = Pattern.compile("^" + prefix.replace("/", "\\/") + "([0-9]\\.[0-9]\\.[0-9])$");
+        this.versionHotfixPattern = Pattern.compile("^" + prefix.replace("/", "\\/") + "([0-9]+\\.[0-9]+\\.[0-9]+)$");
     }
 
     @Override

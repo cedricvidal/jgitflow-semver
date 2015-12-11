@@ -24,6 +24,21 @@ public class ReleaseVersionExtractorTest {
     }
 
     @Test
+    public void v1_0_31() {
+        assertEquals(Version.valueOf("1.0.31"), extractor.extract("release/1.0.31"));
+    }
+
+    @Test
+    public void v1_10_0() {
+        assertEquals(Version.valueOf("1.10.0"), extractor.extract("release/1.10.0"));
+    }
+
+    @Test
+    public void v10_0_0() {
+        assertEquals(Version.valueOf("10.0.0"), extractor.extract("release/10.0.0"));
+    }
+
+    @Test
     public void v1_0() {
         assertNull(extractor.extract("release/1.0"));
     }
