@@ -89,7 +89,7 @@ public class NearestVersionLocator {
                 // otherwise fallback to locate nearest release tag
                 if(distance > 0) {
                     if(LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Extracted version {} from release branch name {} at {} [MERGE_BASE+{}]", releaseInProgressVersion.getNormalVersion(), releaseId, distance);
+                        LOGGER.debug("Extracted version {} from release branch name {} at {} [MERGE_BASE+{}]", releaseInProgressVersion.getNormalVersion(), releaseInProgress.getName(), releaseId.abbreviate(7).name(), distance);
                     }
                     nearestVersion = new NearestVersion(releaseInProgressVersion, distance);
                 } else {
