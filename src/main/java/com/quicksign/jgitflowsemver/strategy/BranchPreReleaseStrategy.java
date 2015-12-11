@@ -7,6 +7,8 @@ import com.quicksign.jgitflowsemver.version.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -19,6 +21,8 @@ import static com.quicksign.jgitflowsemver.strategy.BranchHotfixStrategy.getHotf
  * @author <a href="mailto:cedric.vidal@quicksign.com">Cedric Vidal, Quicksign</a>
  */
 public class BranchPreReleaseStrategy extends AbstractStrategy implements Strategy {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BranchPreReleaseStrategy.class);
 
     @Override
     public boolean canInfer(final Repository repo, GitflowVersioningConfiguration conf) throws IOException {
@@ -48,7 +52,11 @@ public class BranchPreReleaseStrategy extends AbstractStrategy implements Strate
         NearestVersion nearestVersion = new NearestVersionLocator().locate(git);
 
         final Repository repo = git.getRepository();
-        final Version releaseVersion = extractReleaseOrHotfixVersion(repo, repo.getBranch());
+        final String branchName = repo.getBranch();
+        final Version releaseVersion = extractReleaseOrHotfixVersion(repo, branchName);
+        if(LOGGER.isInfoEnabled()) {
+            LOGGER.info("Extracted version {} from release branch name {}", releaseVersion.getNormalVersion(), branchName);
+        }
 
         return new VersionWithTypeBuilder(releaseVersion.toString())
             .branch(conf.getPreReleaseIds().getPreRelease())

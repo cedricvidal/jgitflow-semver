@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.List;
 
 /**
@@ -27,7 +26,7 @@ public class JGitFlowSemver {
     private final Repository repository;
     private final File dir;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JGitFlowSemver.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(JGitFlowSemver.class);
     private final GitflowVersioningConfiguration conf;
     private final Git git;
 
@@ -39,9 +38,14 @@ public class JGitFlowSemver {
         options.addOption("b", "branch", true, "force branch name in case of a detached repo");
         options.addOption("s", "snapshot", false, "Use Maven SNAPSHOT instead of semver build metadata");
         options.addOption("m", "maven", false, "Maven compatible semver versions");
+        options.addOption("l", "logLevel", true, "Configures log level to TRACE|DEBUG|INFO|WARN|ERROR");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse( options, args);
+
+        String logLevel = cmd.getOptionValue("l", "error"); //$NON-NLS-1$
+        System.setProperty("org.slf4j.simpleLogger.log.com.quicksign", logLevel); //$NON-NLS-1$
+        LOGGER = LoggerFactory.getLogger(JGitFlowSemver.class);
 
         final GitflowVersioningConfiguration conf = new GitflowVersioningConfiguration();
         try {
@@ -49,12 +53,15 @@ public class JGitFlowSemver {
             CommandLine line = parser.parse( options, args );
             if(line.hasOption('b')) {
                 conf.setForceBranch(line.getOptionValue('b'));
+                LOGGER.debug("Forcing branch name {}", conf.getForceBranch());
             }
             if(line.hasOption('s')) {
                 conf.useMavenSnapshot();
+                LOGGER.debug("Maven snapshots mode");
             }
             if(line.hasOption('m')) {
                 conf.mavenCompatibility();
+                LOGGER.debug("Maven compatibility mode");
             }
             args = line.getArgs();
         }
@@ -108,6 +115,9 @@ public class JGitFlowSemver {
         VersionWithType versionWithType = null;
         for (Strategy strategy : Strategy.STRATEGIES) {
             if(strategy.canInfer(repository, conf)) {
+                if(LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Applying strategy {}", strategy.getClass().getSimpleName());
+                }
                 versionWithType = strategy.infer(git, conf);
 
                 if(versionWithType != null) {
