@@ -191,7 +191,7 @@ public class NearestVersionLocator {
         int distanceFromAny = minVersion != null ? minDistance : size(git.log().call());
 
         if(LOGGER.isInfoEnabled()) {
-            LOGGER.info("Closest tag is " + minVersion.getNormalVersion() + " at " + minObjectId.abbreviate(7).name() + " [HEAD+" + minDistance + "]");
+            LOGGER.info("Closest tag is {}{}" + " [HEAD+{}]", anyVersion.getNormalVersion(), minObjectId != null ? " at " + minObjectId.abbreviate(7).name() : "", distanceFromAny);
         }
 
         return new NearestVersion(anyVersion, distanceFromAny).objectId(minObjectId);

@@ -26,7 +26,7 @@ public class JGitFlowSemver {
     private final Repository repository;
     private final File dir;
 
-    private static Logger LOGGER;
+    private static Logger LOGGER = LoggerFactory.getLogger(JGitFlowSemver.class);
     private final GitflowVersioningConfiguration conf;
     private final Git git;
 
