@@ -132,7 +132,7 @@ public class VersionWithTypeBuilder {
             StringBuilder buildMetadata = new StringBuilder();
             if(distanceFromRelease > 0) {
                 if(branch != null && branch.length() > 0 && !conf.getPreReleaseIds().getDevelop().equals(branch)) {
-                    buildMetadata.append(branch).append('.');
+                    buildMetadata.append(branch).append('-');
                 }
                 buildMetadata.append("SNAPSHOT");
             }
