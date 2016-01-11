@@ -1,5 +1,5 @@
 #!/bin/sh
-V=0.2.3
+V=0.2.4
 
 JGFSVD=~/.jgitflow-semver/$V;JGFSV=$JGFSVD/jgitflow-semver-$V.sh; ([ ! -f $JGFSV ] && mkdir -p $JGFSVD && \
     wget -q -O $JGFSV http://dl.bintray.com/cedric-vidal/jgitflow-semver/com/quicksign/jgitflow-semver/jgitflow-semver/$V/jgitflow-semver-$V-script.sh && \
