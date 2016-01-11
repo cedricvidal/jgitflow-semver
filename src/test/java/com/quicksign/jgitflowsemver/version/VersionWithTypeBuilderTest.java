@@ -22,11 +22,11 @@ public class VersionWithTypeBuilderTest {
     @Test
     public void v1_0_0_fix_foo_SNAPSHOT() {
         final NearestVersion nearestVersion = new NearestVersion(Version.valueOf("0.9.0"), 1);
-        assertEquals(Version.valueOf("1.0.0-fix.foo.SNAPSHOT"), new VersionWithTypeBuilder("1.0.0").branch("fix.foo").distanceFromRelease(nearestVersion).build(new GitflowVersioningConfiguration().useMavenSnapshot()).getVersion());
+        assertEquals(Version.valueOf("1.0.0-fix.foo-SNAPSHOT"), new VersionWithTypeBuilder("1.0.0").branch("fix.foo").distanceFromRelease(nearestVersion).build(new GitflowVersioningConfiguration().useMavenSnapshot()).getVersion());
     }
     @Test
     public void v1_0_0_feature_foo_SNAPSHOT() {
         final NearestVersion nearestVersion = new NearestVersion(Version.valueOf("0.9.0"), 1);
-        assertEquals(Version.valueOf("1.0.0-feature.foo.SNAPSHOT"), new VersionWithTypeBuilder("1.0.0").branch("feature.foo").distanceFromRelease(nearestVersion).build(new GitflowVersioningConfiguration().useMavenSnapshot()).getVersion());
+        assertEquals(Version.valueOf("1.0.0-feature.foo-SNAPSHOT"), new VersionWithTypeBuilder("1.0.0").branch("feature.foo").distanceFromRelease(nearestVersion).build(new GitflowVersioningConfiguration().useMavenSnapshot()).getVersion());
     }
 }
